@@ -1,5 +1,7 @@
 from manim import *
 import numpy as np
+import os
+
 
 # Set default TexTemplate to support Vietnamese using XeLaTeX
 my_template = TexTemplate(tex_compiler="xelatex", output_format=".xdv")
@@ -18,8 +20,70 @@ def fit_in_box(mobject, box, padding=0.15):
     mobject.move_to(box.get_center())
     return mobject
 
-class Section1Introduction(Scene):
+class Section1IntroductionPart1(Scene):
     def construct(self):
+        # Add audio
+        self.add_sound(os.path.join(os.path.dirname(__file__), "assets", "Genie_Intro_Part1.wav"))
+
+        # =========================================================================
+        # PHASE 0: OPEN-ENDEDNESS PRE-INTRO QUESTION (0s - 11s)
+        # =========================================================================
+        question = Tex(
+            r"\text{Làm sao để hiện thực hóa \textbf{Open-Endedness} mà Tim vừa đề cập?}",
+            color=WHITE
+        ).scale(0.85).to_edge(UP, buff=1.0)
+
+        agent_box = RoundedRectangle(width=5.2, height=1.6, color=GRAY_C, fill_color=GRAY_D, fill_opacity=0.1).shift(LEFT * 3.2 + DOWN * 0.5)
+        agent_label = Tex(
+            r"\text{Nâng cấp thuật toán của Agent}",
+            color=GRAY_A
+        ).scale(0.7)
+        fit_in_box(agent_label, agent_box)
+        agent_cross = Cross(agent_box, stroke_color=RED, stroke_width=6)
+
+        env_box = RoundedRectangle(width=5.2, height=1.6, color=GREEN_C, fill_color=GREEN_E, fill_opacity=0.15).shift(RIGHT * 3.2 + DOWN * 0.5)
+        env_label = Tex(
+            r"\text{\textbf{Tái định nghĩa Môi trường}}",
+            color=GREEN_C
+        ).scale(0.75)
+        fit_in_box(env_label, env_box)
+
+        # 0.5s: Write question
+        self.wait(0.5)
+        self.play(Write(question), run_time=1.5)
+        
+        # Wait until 3.0s (already elapsed: 2.0s -> wait 1.0s)
+        self.wait(1.0)
+        
+        # 3.0s: Show Agent Option
+        self.play(Create(agent_box), Write(agent_label), run_time=1.0)
+        
+        # 4.0s: Draw Red Cross over Agent Option
+        self.play(Create(agent_cross), run_time=0.8)
+        
+        # Wait until 6.0s (already elapsed: 4.8s -> wait 1.2s)
+        self.wait(1.2)
+        
+        # 6.0s: Show Environment Option
+        self.play(Create(env_box), Write(env_label), run_time=1.0)
+        
+        # 7.0s: Highlight Environment Option by animating stroke color and width
+        self.play(env_box.animate.set_stroke(color=GREEN, width=6), run_time=1.0)
+        
+        # Wait until 9.5s (already elapsed: 8.0s -> wait 1.5s)
+        self.wait(1.5)
+        
+        # 9.5s: Fade out all intro elements to clear screen (finishes at 10.5s)
+        self.play(
+            FadeOut(question),
+            FadeOut(agent_box), FadeOut(agent_label), FadeOut(agent_cross),
+            FadeOut(env_box), FadeOut(env_label),
+            run_time=1.0
+        )
+        
+        # Wait until 11.0s (already elapsed: 10.5s -> wait 0.5s)
+        self.wait(0.5)
+
         # =========================================================================
         # PHASE 1: ALAN WATTS QUOTE (1972)
         # =========================================================================
@@ -61,20 +125,30 @@ class Section1Introduction(Scene):
         ).add_tip(tip_length=0.2)
         grows_label = Tex(r"\text{Nuôi dưỡng}", color=GOLD).next_to(arrow_grows, DOWN, buff=0.1).scale(0.7)
         
+        # Timeline: 11s - Alan Watts Title
         self.play(Write(title_watts))
-        self.play(FadeIn(quote_watts))
-        self.wait(1.5)
+        
+        # Timeline: 19s - Alan Watts Quote & Boxes
+        self.wait(7.0)
         self.play(
-            Create(organism_box), Write(organism_label), 
+            FadeIn(quote_watts),
+            Create(organism_box), Write(organism_label),
             Create(environment_box), Write(environment_label)
         )
-        self.play(Create(arrow_creates), Write(creates_label))
+        
+        # Timeline: 24s - Environment -> Organism arrow (arrow_grows)
+        self.wait(3.5)
         self.play(Create(arrow_grows), Write(grows_label))
-        self.wait(5.0)
+        
+        # Timeline: 26s - Organism -> Environment arrow (arrow_creates)
+        self.wait(1.0)
+        self.play(Create(arrow_creates), Write(creates_label))
 
         # =========================================================================
         # PHASE 2: JEFF CLUNE QUOTE (2019)
         # =========================================================================
+        # Timeline: 40s - Jeff Clune Title (Fade out Watts elements at 39s)
+        self.wait(12.0)
         self.play(
             FadeOut(title_watts), FadeOut(quote_watts),
             FadeOut(organism_box), FadeOut(organism_label),
@@ -82,7 +156,7 @@ class Section1Introduction(Scene):
             FadeOut(arrow_creates), FadeOut(creates_label),
             FadeOut(arrow_grows), FadeOut(grows_label)
         )
-
+        
         title_clune = Tex(r"\text{\textbf{Jeff Clune (2019)}}", color=GOLD).to_edge(UP, buff=1.0).scale(1.1)
         
         quote_clune = Tex(
@@ -101,17 +175,20 @@ class Section1Introduction(Scene):
         explanation_clune = Tex(r"\text{Không gian tìm kiếm vô hạn, nơi mọi môi trường có thể lập trình đều được mô phỏng}", color=GRAY_A).scale(0.75).shift(DOWN * 1.5)
 
         self.play(Write(title_clune))
-        self.play(FadeIn(quote_clune, shift=UP * 0.5))
-        self.play(Write(explanation_clune))
-        self.wait(6.0)
+        
+        # Timeline: 49s - Quote & Explanation
+        self.wait(8.0)
+        self.play(FadeIn(quote_clune, shift=UP * 0.5), Write(explanation_clune))
 
         # =========================================================================
         # PHASE 3: FOUNDATION WORLD MODELS INTRODUCTION
         # =========================================================================
+        # Timeline: 1:05s (65s) - Foundation World Model Title (Fade out Clune at 64s)
+        self.wait(13.5)
         self.play(
             FadeOut(title_clune), FadeOut(quote_clune), FadeOut(explanation_clune)
         )
-
+        
         title_fwm = Tex(r"\text{\textbf{02. Foundation World Models}}", color=GOLD).to_edge(UP, buff=1.0).scale(1.1)
         
         intro_text = Tex(
@@ -153,31 +230,31 @@ class Section1Introduction(Scene):
         ).scale(0.7).next_to(formula_fwm, DOWN, buff=2.5)
 
         self.play(Write(title_fwm))
+        
+        # Timeline: 1:10s (70s) - Text "Tương tự..."
+        self.wait(4.0)
         self.play(FadeIn(intro_text, shift=UP * 0.2))
-        self.wait(2.5)
+        
+        # Timeline: 1:20s (80s) - Formula f:...
+        self.wait(9.0)
         self.play(Write(formula_fwm), run_time=1.5)
         self.play(Create(state_box), Create(action_box), Create(output_box))
-        self.wait(1.5)
+        
+        # Timeline: 1:28s (88s) - Interventions arrow
+        self.wait(5.5)
         self.play(FadeIn(intervention_label, shift=UP * 0.2), Create(intervention_arrow))
         self.play(action_box.animate.set_stroke(width=4), run_time=0.5) 
         self.play(Write(explanation_fwm))
-        self.wait(5.0)
+        
+        # Wait until the audio ends (95.2s)
+        self.wait(4.2)
 
+
+class Section1IntroductionPart2(Scene):
+    def construct(self):
         # =========================================================================
         # PHASE 4: MODEL COMPARISON TABLE
         # =========================================================================
-        self.play(
-            FadeOut(title_fwm),
-            FadeOut(intro_text),
-            FadeOut(formula_fwm),
-            FadeOut(state_box),
-            FadeOut(action_box),
-            FadeOut(output_box),
-            FadeOut(intervention_label),
-            FadeOut(intervention_arrow),
-            FadeOut(explanation_fwm),
-        )
-
         title_table = Tex(r"\text{\textbf{So sánh các Model Class hiện nay}}", color=WHITE).to_edge(UP, buff=1.0).scale(1.1)
 
         col_x = [-4.0, -0.8, 2.5, 5.5]
@@ -335,7 +412,7 @@ class Section1Introduction(Scene):
 
 class Section21Methodology(Scene):
     def construct(self):
-        title = Tex(r"\text{\textbf{Genie: Three Core Components}}", color=WHITE).to_edge(UP).scale(1.2)
+        title = Tex(r"\text{\textbf{Genie: Three Core Components}}", color=WHITE).to_edge(UP, buff=1.0).scale(1.2)
         self.play(Write(title))
         self.wait(2.0)
 
@@ -346,40 +423,40 @@ class Section21Methodology(Scene):
         ])
         for i, f in enumerate(frames_stack):
             f.shift(RIGHT * 0.12 * i + UP * 0.08 * i)
-        frames_stack.move_to(LEFT * 5.2)
+        frames_stack.move_to(LEFT * 6.5)
         frames_label = Tex(r"\text{Frames } $x_{1:T}$", color=WHITE).next_to(frames_stack, DOWN).scale(0.8)
 
         # Video Tokenizer box (Blue)
-        tok_box = Rectangle(width=3.2, height=1.3, color=BLUE).shift(LEFT * 1.5 + UP * 1.5)
+        tok_box = Rectangle(width=2.6, height=1.2, color=BLUE).shift(LEFT * 2.5 + UP * 1.5)
         tok_label = Tex(r"\text{\textbf{Video Tokenizer}} \\ \text{(Encoder)}", color=BLUE)
         fit_in_box(tok_label, tok_box)
 
         # LAM box (Orange)
-        lam_box = Rectangle(width=3.2, height=1.3, color=ORANGE).shift(LEFT * 1.5 + DOWN * 1.5)
+        lam_box = Rectangle(width=2.6, height=1.2, color=ORANGE).shift(LEFT * 2.5 + DOWN * 1.5)
         lam_label = Tex(r"\text{\textbf{Latent Action Model}} \\ \text{(LAM)}", color=ORANGE)
         fit_in_box(lam_label, lam_box)
 
         # Dynamics Model box (Red)
-        dyn_box = Rectangle(width=3.2, height=1.8, color=RED).shift(RIGHT * 2.0)
+        dyn_box = Rectangle(width=2.6, height=1.5, color=RED).shift(RIGHT * 2.1)
         dyn_label = Tex(r"\text{\textbf{Dynamics Model}} \\ \text{(MaskGIT)}", color=RED)
         fit_in_box(dyn_label, dyn_box)
 
         # Decoder box (Blue)
-        dec_box = Rectangle(width=2.5, height=1.3, color=BLUE).shift(RIGHT * 5.0)
+        dec_box = Rectangle(width=2.0, height=1.2, color=BLUE).shift(RIGHT * 6.3)
         dec_label = Tex(r"\text{\textbf{Tokenizer Decoder}} \\ \text{(Decoder)}", color=BLUE)
         fit_in_box(dec_label, dec_box)
 
         # Arrows
         arrow_to_tok = Arrow(start=frames_stack.get_right() + UP * 0.2, end=tok_box.get_left(), color=GRAY)
         arrow_to_lam = Arrow(start=frames_stack.get_right() + DOWN * 0.2, end=lam_box.get_left(), color=GRAY)
-        arrow_tok_to_dyn = Arrow(start=tok_box.get_right(), end=dyn_box.get_left() + UP * 0.4, color=BLUE)
-        arrow_lam_to_dyn = Arrow(start=lam_box.get_right(), end=dyn_box.get_left() + DOWN * 0.4, color=ORANGE)
+        arrow_tok_to_dyn = Arrow(start=tok_box.get_right(), end=dyn_box.get_left() + UP * 0.35, color=BLUE)
+        arrow_lam_to_dyn = Arrow(start=lam_box.get_right(), end=dyn_box.get_left() + DOWN * 0.35, color=ORANGE)
         arrow_dyn_to_dec = Arrow(start=dyn_box.get_right(), end=dec_box.get_left(), color=RED)
 
         # Labels for variables
-        z_label = MathTex("z_{1:T}", color=BLUE).next_to(arrow_tok_to_dyn, UP, buff=0.1).scale(0.9)
-        a_label = MathTex("a_{1:T}", color=ORANGE).next_to(arrow_lam_to_dyn, DOWN, buff=0.1).scale(0.9)
-        z_hat_label = MathTex(r"\hat{z}_{t+1}", color=RED).next_to(arrow_dyn_to_dec, UP, buff=0.1).scale(0.9)
+        z_label = MathTex("z_{1:T}", color=BLUE).next_to(arrow_tok_to_dyn, UP, buff=0.08).scale(0.85)
+        a_label = MathTex("a_{1:T}", color=ORANGE).next_to(arrow_lam_to_dyn, DOWN, buff=0.08).scale(0.85)
+        z_hat_label = MathTex(r"\hat{z}_{t+1}", color=RED).next_to(arrow_dyn_to_dec, UP, buff=0.08).scale(0.85)
 
         # Sequential creation
         self.play(Create(frames_stack), Write(frames_label))
