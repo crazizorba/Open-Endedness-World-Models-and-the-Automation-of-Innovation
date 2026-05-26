@@ -378,53 +378,21 @@ class Section1IntroductionPart2(Scene):
 
         title_goal = Tex(r"\text{\textbf{Mục tiêu của Genie}}", color=GOLD).to_edge(UP, buff=1.0).scale(1.1)
 
-        # Split desc_goal into word-by-word groups for sequential text-diagram sync
-        part1_specs = [
-            ("``Huấn", WHITE, False),
-            ("luyện", WHITE, False),
-            ("một", WHITE, False),
-            ("generative", GOLD, True),
-            ("world", GOLD, True),
-            ("model", GOLD, True),
-            ("từ", WHITE, False),
-            ("internet", ORANGE, True),
-            ("videos,", ORANGE, True)
-        ]
-        desc_part1 = VGroup(*[
-            Tex(rf"\text{{\textbf{{{text}}}}}" if is_bold else rf"\text{{{text}}}", color=col)
-            for text, col, is_bold in part1_specs
-        ]).arrange(RIGHT, buff=0.08).scale(0.7)
+        # Text lines for Genie goal, colored using native LaTeX xcolor HTML hex codes
+        desc_part1 = Tex(
+            r"\text{“Huấn luyện một \textbf{\textcolor[HTML]{F0AC5F}{generative world model}} từ \textbf{\textcolor[HTML]{FF862F}{internet videos}},}",
+            color=WHITE
+        ).scale(0.7)
 
-        part2_specs = [
-            ("có", WHITE, False),
-            ("thể", WHITE, False),
-            ("được", WHITE, False),
-            ("sử", WHITE, False),
-            ("dụng", WHITE, False),
-            ("làm", WHITE, False),
-            ("simulator", PURPLE_C, True),
-            ("cho", WHITE, False),
-            ("embodied", GREEN, True),
-            ("AGI", GREEN, True)
-        ]
-        desc_part2 = VGroup(*[
-            Tex(rf"\text{{\textbf{{{text}}}}}" if is_bold else rf"\text{{{text}}}", color=col)
-            for text, col, is_bold in part2_specs
-        ]).arrange(RIGHT, buff=0.08).scale(0.7)
+        desc_part2 = Tex(
+            r"\text{có thể được sử dụng làm \textbf{\textcolor[HTML]{9A72AC}{simulator}} cho \textbf{\textcolor[HTML]{83C167}{embodied AGI}}}",
+            color=WHITE
+        ).scale(0.7)
 
-        part3_specs = [
-            ("và", WHITE, False),
-            ("một", WHITE, False),
-            ("hình", WHITE, False),
-            ("thức", WHITE, False),
-            ("generative", BLUE, True),
-            ("entertainment", BLUE, True),
-            ("mới.''", WHITE, False)
-        ]
-        desc_part3 = VGroup(*[
-            Tex(rf"\text{{\textbf{{{text}}}}}" if is_bold else rf"\text{{{text}}}", color=col)
-            for text, col, is_bold in part3_specs
-        ]).arrange(RIGHT, buff=0.08).scale(0.7)
+        desc_part3 = Tex(
+            r"\text{và một hình thức \textbf{\textcolor[HTML]{58C4DD}{generative entertainment}} mới.”}",
+            color=WHITE
+        ).scale(0.7)
         
         desc_goal = VGroup(desc_part1, desc_part2, desc_part3).arrange(DOWN, buff=0.15).next_to(title_goal, DOWN, buff=0.8)
 
@@ -451,29 +419,30 @@ class Section1IntroductionPart2(Scene):
 
         self.play(Write(title_goal), run_time=1.0)
         
-        # Timeline: 1:15s (75s) - Flow starts with sequential text + simultaneous boxes
-        self.wait(6.0)
+        # Timeline: 1:13s (73s) - Line 1 text ("Huấn luyện...") appears
+        self.wait(4.0)
+        self.play(Write(desc_part1), run_time=1.5)
         
-        # Step 1: Internet Videos text (word-by-word) and box Videos + Genie circle flow
+        # Timeline: 1:15s (75s) - Box Videos (and Genie flow) appears
+        self.wait(0.5)
         self.play(
-            LaggedStart(*[Write(w) for w in desc_part1], lag_ratio=0.15, run_time=2.5),
             Create(input_goal_box), Write(input_goal_label),
             Create(arrow_input_to_genie), Create(genie_circle), Write(genie_circle_lbl),
-            run_time=2.5
+            run_time=2.0
         )
         
-        # Timeline: 1:25s (85s) - embodied AGI text (word-by-word) and Embodied AGI box
-        self.wait(7.5)
+        # Timeline: 1:23s (83s) - Line 2 text and Embodied AGI box appear
+        self.wait(6.0)
         self.play(
-            LaggedStart(*[Write(w) for w in desc_part2], lag_ratio=0.15, run_time=2.0),
+            Write(desc_part2),
             Create(arrow_genie_to_robot), Create(robot_box), Write(robot_lbl),
             run_time=2.0
         )
         
-        # Timeline: 1:28s (88s) - Generative entertainment text (word-by-word) and Generative entertainment box
-        self.wait(1.0)
+        # Timeline: 1:28s (88s) - Line 3 text and Generative Entertainment box appear
+        self.wait(3.0)
         self.play(
-            LaggedStart(*[Write(w) for w in desc_part3], lag_ratio=0.15, run_time=2.0),
+            Write(desc_part3),
             Create(arrow_genie_to_game), Create(game_box), Write(game_lbl),
             run_time=2.0
         )
@@ -484,9 +453,10 @@ class Section1IntroductionPart2(Scene):
 
 class Section21Methodology(Scene):
     def construct(self):
+        # Add audio
+        self.add_sound(os.path.join(os.path.dirname(__file__), "assets", "Genie_Components.wav"))
+
         title = Tex(r"\text{\textbf{Genie: Three Core Components}}", color=WHITE).to_edge(UP, buff=1.0).scale(1.2)
-        self.play(Write(title))
-        self.wait(2.0)
 
         # Input frames stack (T frames)
         frames_stack = VGroup(*[
@@ -496,7 +466,7 @@ class Section21Methodology(Scene):
         for i, f in enumerate(frames_stack):
             f.shift(RIGHT * 0.12 * i + UP * 0.08 * i)
         frames_stack.move_to(LEFT * 6.5)
-        frames_label = Tex(r"\text{Frames } $x_{1:T}$", color=WHITE).next_to(frames_stack, DOWN).scale(0.8)
+        frames_label = Tex(r"\text{Frames} $x_{1:T}$", color=WHITE).next_to(frames_stack, DOWN).scale(0.8)
 
         # Video Tokenizer box (Blue)
         tok_box = Rectangle(width=2.6, height=1.2, color=BLUE).shift(LEFT * 2.5 + UP * 1.5)
@@ -528,38 +498,131 @@ class Section21Methodology(Scene):
         # Labels for variables
         z_label = MathTex("z_{1:T}", color=BLUE).next_to(arrow_tok_to_dyn, UP, buff=0.08).scale(0.85)
         a_label = MathTex("a_{1:T}", color=ORANGE).next_to(arrow_lam_to_dyn, DOWN, buff=0.08).scale(0.85)
-        z_hat_label = MathTex(r"\hat{z}_{t+1}", color=RED).next_to(arrow_dyn_to_dec, UP, buff=0.08).scale(0.85)
+        z_hat_label = MathTex(r"\hat{z}_{1:T+1}", color=RED).next_to(arrow_dyn_to_dec, UP, buff=0.08).scale(0.85)
 
-        # Sequential creation
-        self.play(Create(frames_stack), Write(frames_label))
-        self.wait(1.0)
-        self.play(Create(arrow_to_tok), Create(tok_box), Write(tok_label))
-        self.wait(1.0)
-        self.play(Create(arrow_to_lam), Create(lam_box), Write(lam_label))
-        self.wait(1.0)
+        # Action Controller (Interactive Gamepad)
+        controller_box = Rectangle(width=3.6, height=1.0, color=GREEN, stroke_width=2.5, fill_color=GREEN_E, fill_opacity=0.1).shift(LEFT * 2.5 + DOWN * 3.1)
+        
+        # Game controller Mobject
+        controller_body = RoundedRectangle(width=0.9, height=0.5, corner_radius=0.15, color=GREEN, fill_color=GREEN_E, fill_opacity=0.3)
+        # D-pad on the left
+        dpad_h = Line(start=[-0.2, 0, 0], end=[0.2, 0, 0], color=GREEN, stroke_width=2)
+        dpad_v = Line(start=[0, -0.2, 0], end=[0, 0.2, 0], color=GREEN, stroke_width=2)
+        dpad = VGroup(dpad_h, dpad_v).scale(0.6).shift(LEFT * 0.22)
+        # Buttons on the right
+        btn1 = Circle(radius=0.05, color=GREEN, fill_color=GREEN, fill_opacity=0.8).shift(RIGHT * 0.2 + UP * 0.08)
+        btn2 = Circle(radius=0.05, color=GREEN, fill_color=GREEN, fill_opacity=0.8).shift(RIGHT * 0.3 + DOWN * 0.05)
+        buttons = VGroup(btn1, btn2)
+        # Handles/Grips
+        grip_l = RoundedRectangle(width=0.25, height=0.4, corner_radius=0.08, color=GREEN).rotate(PI/6).shift(LEFT * 0.45 + DOWN * 0.1)
+        grip_r = RoundedRectangle(width=0.25, height=0.4, corner_radius=0.08, color=GREEN).rotate(-PI/6).shift(RIGHT * 0.45 + DOWN * 0.1)
+        
+        controller_icon = VGroup(grip_l, grip_r, controller_body, dpad, buttons).scale(0.85)
+        controller_content = VGroup(controller_icon).arrange(DOWN, buff=0.08)
+        fit_in_box(controller_content, controller_box, padding=0.1)
+        
+        arrow_ctrl_to_lam = Arrow(start=controller_box.get_top(), end=lam_box.get_bottom(), color=GREEN)
+
+        # ==========================================
+        # ANIMATION TIMELINE
+        # ==========================================
+        # 0s -> wait 2s
+        self.wait(2.0)
+
+        # 2s: Title appears
+        self.play(Write(title), run_time=1.0) # finishes at 3.0s
+
+        # Wait until 12s (12.0 - 3.0 = 9.0)
+        self.wait(9.0)
+
+        # 12s: Frames stack + label appears
+        self.play(Create(frames_stack), Write(frames_label), run_time=1.5) # finishes at 13.5s
+
+        # Wait until 25s (25.0 - 13.5 = 11.5)
+        self.wait(11.5)
+
+        # 25s: Video Tokenizer box + arrow appears
+        self.play(Create(arrow_to_tok), Create(tok_box), Write(tok_label), run_time=1.5) # finishes at 26.5s
+
+        # Wait until 38s (38.0 - 26.5 = 11.5)
+        self.wait(11.5)
+
+        # 38s: Arrow + text z_{1:T} appears
+        self.play(FadeIn(arrow_tok_to_dyn), FadeIn(z_label), run_time=1.0) # finishes at 39.0s
+
+        # Wait until 41s (41.0 - 39.0 = 2.0)
+        self.wait(2.0)
+
+        # 41s: LAM box + arrow appears
+        self.play(Create(arrow_to_lam), Create(lam_box), Write(lam_label), run_time=1.5) # finishes at 42.5s
+
+        # Wait until 55s (55.0 - 42.5 = 12.5)
+        self.wait(12.5)
+
+        # 55s: Arrow + text a_{1:T} appears
+        self.play(FadeIn(arrow_lam_to_dyn), FadeIn(a_label), run_time=1.0) # finishes at 56.0s
+
+        # Wait until 1:01s (61.0 - 56.0 = 5.0)
+        self.wait(5.0)
+
+        # 1:01s: Highlight arrow + text z_{1:T} (zoom out then zoom in)
+        self.play(arrow_tok_to_dyn.animate.scale(1.3), z_label.animate.scale(1.3), run_time=0.4) # finishes at 61.4s
+        self.play(arrow_tok_to_dyn.animate.scale(1/1.3), z_label.animate.scale(1/1.3), run_time=0.4) # finishes at 61.8s
+
+        # Wait until 1:03s (63.0 - 61.8 = 1.2)
+        self.wait(1.2)
+
+        # 1:03s: Highlight arrow + text a_{1:T} (zoom out then zoom in)
+        self.play(arrow_lam_to_dyn.animate.scale(1.3), a_label.animate.scale(1.3), run_time=0.4) # finishes at 63.4s
+        self.play(arrow_lam_to_dyn.animate.scale(1/1.3), a_label.animate.scale(1/1.3), run_time=0.4) # finishes at 63.8s
+
+        # Wait until 1:08s (68.0 - 63.8 = 4.2)
+        self.wait(4.2)
+
+        # 1:08s: Dynamics Model box appears
+        self.play(Create(dyn_box), Write(dyn_label), run_time=1.5) # finishes at 69.5s
+
+        # Wait until 1:24s (84.0 - 69.5 = 14.5)
+        self.wait(14.5)
+
+        # 1:24s: Arrow + z_hat_{1:T+1} appears
+        self.play(Create(arrow_dyn_to_dec), Write(z_hat_label), run_time=1.5) # finishes at 85.5s
+
+        # Wait until 1:32s (92.0 - 85.5 = 6.5)
+        self.wait(6.5)
+
+        # 1:32s: Tokenizer Decoder box appears
+        self.play(Create(dec_box), Write(dec_label), run_time=1.5) # finishes at 93.5s
+
+        # Wait until 1:46s (106.0 - 93.5 = 12.5)
+        self.wait(12.5)
+
+        # 1:46s: Gamepad controller + green border box + arrow appears
         self.play(
-            Create(arrow_tok_to_dyn), Write(z_label),
-            Create(arrow_lam_to_dyn), Write(a_label)
-        )
-        self.play(Create(dyn_box), Write(dyn_label))
-        self.wait(1.0)
-        self.play(Create(arrow_dyn_to_dec), Write(z_hat_label), Create(dec_box), Write(dec_label))
-        self.wait(10.0)
+            Create(controller_box),
+            FadeIn(controller_content, shift=UP * 0.2),
+            Create(arrow_ctrl_to_lam),
+            run_time=2.0
+        ) # finishes at 108.0s
+
+        # Wait until end of audio (116.20s total)
+        self.wait(8.2)
 
 
 class Section221VideoTokenizer(Scene):
     def construct(self):
-        title = Tex(r"\text{\textbf{Component 1: Video Tokenizer (ST-ViViT)}}", color=WHITE).to_edge(UP, buff=1.0).scale(1.2)
-        self.play(Write(title))
-        self.wait(2.0)
+        # Add audio
+        self.add_sound(os.path.join(os.path.dirname(__file__), "assets", "Genie_Video_Tokenizer.wav"))
 
-        # 3D Video block representing x_{1:T}
+        title = Tex(r"\text{\textbf{Component 1: Video Tokenizer (ST-ViViT)}}", color=WHITE).to_edge(UP, buff=1.0).scale(1.2)
+
+        # 3D Video block representing x_{1:T} (shifted further left: -5.0)
         video_block = VGroup()
         for i in range(4):
             rect = Rectangle(width=1.8, height=1.1, stroke_color=BLUE_C, stroke_width=2, fill_color=BLUE_E, fill_opacity=0.25)
             rect.shift(RIGHT * 0.25 * i + UP * 0.15 * i)
             video_block.add(rect)
-        video_block.move_to(LEFT * 4.5 + UP * 1.3)
+        video_block.move_to(LEFT * 5.0 + UP * 1.3)
         
         # Grid lines on the front face to show spatiotemporal patchification
         front_rect = video_block[-1]
@@ -574,75 +637,174 @@ class Section221VideoTokenizer(Scene):
 
         video_label = Tex(r"\text{Video } $x_{1:T}$ \\ \text{160 } $\times$ \text{ 90, } $T=16$", color=WHITE).next_to(video_block, DOWN).scale(0.8)
 
-        # ST-ViViT Box
-        encoder_box = RoundedRectangle(width=2.8, height=2.0, color=BLUE, corner_radius=0.1).shift(LEFT * 0.6 + UP * 1.3)
-        encoder_label = Tex(r"\text{\textbf{ST-ViViT Encoder}} \\ \text{Spatiotemporal} \\ \text{Transformer}", color=BLUE)
-        fit_in_box(encoder_label, encoder_box)
+        # ST-ViViT Box Layout (centered horizontally: 0.0)
+        st_vivit_box = RoundedRectangle(width=3.6, height=2.4, color=BLUE, corner_radius=0.1).shift(UP * 1.3)
+        
+        # Changed to Rectangle (no corner_radius)
+        spatial_box = Rectangle(width=3.2, height=0.7, color=BLUE_B, fill_opacity=0.1).move_to(st_vivit_box.get_center() + UP * 0.5)
+        spatial_label = Tex(r"\text{Spatiotemporal Attention}", color=WHITE).scale(0.5)
+        fit_in_box(spatial_label, spatial_box)
 
-        arrow_patch = Arrow(start=video_block.get_right(), end=encoder_box.get_left(), color=GRAY)
+        # Changed to Rectangle (no corner_radius)
+        temporal_box = Rectangle(width=3.2, height=0.7, color=ORANGE, fill_opacity=0.1).move_to(st_vivit_box.get_center() + DOWN * 0.5)
+        temporal_label = Tex(r"\text{Temporal Attention}", color=WHITE).scale(0.5)
+        fit_in_box(temporal_label, temporal_box)
 
-        # Codebook Grid (5x5 representation of VQ Codebook)
+        st_vivit_label = Tex(r"\text{\textbf{ST-ViViT Encoder}}", color=BLUE).scale(0.7).next_to(st_vivit_box, DOWN, buff=0.35)
+        st_transformer_text = Tex(r"\text{(Spatiotemporal Transformer)}", color=BLUE).scale(0.6).next_to(st_vivit_label, DOWN, buff=0.2)
+
+        arrow_patch = Arrow(start=video_block.get_right(), end=st_vivit_box.get_left(), color=GRAY)
+
+        # 42s Patch: A small square on the video block
+        patch = Square(side_length=0.25, fill_color=BLUE, fill_opacity=0.8, stroke_color=BLUE_A).move_to(front_rect.get_center())
+
+        # Codebook Grid (5x5 representation of VQ Codebook) (shifted further right: 4.8)
         codebook_grid = VGroup(*[
             Square(side_length=0.25, stroke_color=GRAY, fill_opacity=0.1, fill_color=WHITE)
             for _ in range(25)
-        ]).arrange_in_grid(5, 5, buff=0.08).shift(RIGHT * 3.6 + UP * 1.3)
+        ]).arrange_in_grid(5, 5, buff=0.08).shift(RIGHT * 4.8 + UP * 1.3)
+        
         codebook_label = Tex(r"\text{\textbf{VQ Codebook}} \\ \text{(Discrete Latent Space)}", color=WHITE).next_to(codebook_grid, DOWN).scale(0.8)
-        codebook_specs = Tex(r"\text{Vocabulary Size } $|V| = 1024$ \\ \text{Embedding Dim } $D = 32$", color=GRAY).next_to(codebook_label, DOWN, buff=0.1).scale(0.7)
+        
+        vocab_size_text = Tex(r"\text{Vocabulary Size} $|V| = 1024$", color=GRAY).next_to(codebook_label, DOWN, buff=0.1).scale(0.7)
+        embedding_dim_text = Tex(r"\text{Embedding Dim} $D = 32$", color=GRAY).next_to(vocab_size_text, DOWN, buff=0.08).scale(0.7)
 
-        arrow_to_codebook = Arrow(start=encoder_box.get_right(), end=codebook_grid.get_left(), color=BLUE)
-
-        # Sequential rendering
-        self.play(Create(video_block), Create(grid_lines), Write(video_label))
-        self.wait(1.5)
-        self.play(Create(arrow_patch), Create(encoder_box), Write(encoder_label))
-        self.wait(1.5)
-
-        # Animate a small 3D patch moving into ST-ViViT Encoder
-        patch = VGroup(*[
-            Rectangle(width=0.3, height=0.2, fill_color=BLUE, fill_opacity=0.8, stroke_color=BLUE_A)
-            for _ in range(3)
-        ])
-        for idx, p in enumerate(patch):
-            p.shift(RIGHT * 0.05 * idx + UP * 0.03 * idx)
-        patch.move_to(front_rect.get_center())
-
-        self.play(Create(patch))
-        self.play(patch.animate.move_to(encoder_box.get_center()), run_time=1.5)
-        self.play(FadeOut(patch))
-        self.wait(1.0)
-
-        # Show VQ mapping
-        self.play(Create(arrow_to_codebook), Create(codebook_grid), Write(codebook_label), Write(codebook_specs))
-        target_cell = codebook_grid[12]
-        self.play(target_cell.animate.set_fill(BLUE, opacity=0.8))
-        self.wait(3.0)
+        arrow_to_codebook = Arrow(start=st_vivit_box.get_right(), end=codebook_grid.get_left(), color=BLUE)
 
         # Computational Contrast side-by-side (Phenaki vs Genie)
-        contrast_group = VGroup()
-        
-        phenaki_box = RoundedRectangle(width=5.0, height=1.4, color=RED, corner_radius=0.1)
+        phenaki_box = RoundedRectangle(width=4.2, height=1.1, color=RED, corner_radius=0.1).shift(LEFT * 2.8 + DOWN * 2.6)
         phenaki_text = VGroup(
             Tex(r"\text{\textbf{C-ViViT (Phenaki)}}", color=RED),
-            Tex(r"\text{Độ phức tạp: } $O(T^2)$", color=RED),
-            Tex(r"\text{Bộ nhớ tăng theo hàm bậc hai với chiều dài chuỗi}", color=RED)
+            Tex(r"\text{Độ phức tạp:} $O(t^2)$", color=RED),
         ).arrange(DOWN, buff=0.08)
         fit_in_box(phenaki_text, phenaki_box)
         
-        genie_box = RoundedRectangle(width=5.0, height=1.4, color=GREEN, corner_radius=0.1)
+        genie_box = RoundedRectangle(width=4.2, height=1.1, color=GREEN, corner_radius=0.1).shift(RIGHT * 2.8 + DOWN * 2.6)
         genie_text = VGroup(
             Tex(r"\text{\textbf{ST-ViViT (Genie)}}", color=GREEN),
-            Tex(r"\text{Độ phức tạp: } $O(T)$", color=GREEN),
-            Tex(r"\text{Tăng trưởng tuyến tính, tối ưu hóa bộ nhớ hiệu quả}", color=GREEN)
+            Tex(r"\text{Độ phức tạp:} $O(t)$", color=GREEN),
         ).arrange(DOWN, buff=0.08)
         fit_in_box(genie_text, genie_box)
+
+        # ==========================================
+        # ANIMATION TIMELINE
+        # ==========================================
+        # 0s -> wait 3s
+        self.wait(3.0)
+
+        # 3s: Title appears
+        self.play(Write(title), run_time=1.5) # finishes at 4.5s
+
+        # Wait until 14s (14.0 - 4.5 = 9.5)
+        self.wait(9.5)
+
+        # 14s: Video box + grid + label appears
+        self.play(Create(video_block), Create(grid_lines), Write(video_label), run_time=2.0) # finishes at 16.0s
+
+        # Wait until 23s (23.0 - 16.0 = 7.0)
+        self.wait(7.0)
+
+        # 23s: ST-ViViT box + arrow + title label appears (NO internal attention boxes)
+        self.play(
+            Create(arrow_patch),
+            Create(st_vivit_box),
+            Write(st_vivit_label),
+            run_time=2.0
+        ) # finishes at 25.0s
+
+        # Wait until 28s (28.0 - 25.0 = 3.0)
+        self.wait(3.0)
+
+        # 28s: Spatiotemporal Transformer text appears below ST-ViViT
+        self.play(Write(st_transformer_text), run_time=1.0) # finishes at 29.0s
+
+        # Wait until 42s (42.0 - 29.0 = 13.0)
+        self.wait(13.0)
+
+        # 42s: Small square patch appears at Video box
+        self.play(Create(patch), run_time=1.0) # finishes at 43.0s
+
+        # Wait until 45s (45.0 - 43.0 = 2.0)
+        self.wait(2.0)
+
+        # 45s: Spatiotemporal Attention box appears + patch moves into it and then fades out/in
+        self.play(
+            FadeIn(spatial_box),
+            FadeIn(spatial_label),
+            patch.animate.move_to(spatial_box.get_center()),
+            run_time=1.5
+        ) # finishes at 46.5s
+        self.play(FadeOut(patch), run_time=0.4) # finishes at 46.9s
+        self.wait(3.5) # wait briefly
+        self.play(FadeIn(patch), run_time=0.4) # finishes at 47.8s
+
+        # Wait until 51s (51.0 - 47.8 = 3.2)
+        self.wait(3.2)
+
+        # 51s: Temporal Attention box appears + patch moves to it
+        self.play(
+            FadeIn(temporal_box),
+            FadeIn(temporal_label),
+            patch.animate.move_to(temporal_box.get_center()),
+            run_time=1.5
+        ) # finishes at 52.5s
+        self.play(FadeOut(patch), run_time=0.5) # finishes at 53.0s
+
+        # Wait until 1:01s (61.0 - 53.0 = 8.0)
+        self.wait(8.0)
+
+        # 1:01s: VQ Codebook box + label + arrow appears, and search index square slides
+        self.play(
+            Create(arrow_to_codebook),
+            Create(codebook_grid),
+            Write(codebook_label),
+            run_time=1.5
+        ) # finishes at 62.5s
+
+        # Grid search scanning animation (sliding a small search square over codebook cells)
+        search_square = Square(side_length=0.25, fill_color=BLUE_A, fill_opacity=0.8, stroke_color=BLUE_D)
+        search_square.move_to(codebook_grid[0].get_center())
+        self.play(FadeIn(search_square), run_time=0.3) # finishes at 62.8s
         
-        contrast_group.add(
-            VGroup(phenaki_box, phenaki_text),
-            VGroup(genie_box, genie_text)
-        ).arrange(RIGHT, buff=0.8).shift(DOWN * 2.6)
-        
-        self.play(FadeIn(contrast_group))
+        # Slide through cells 1 -> 2 -> 7 -> 8 -> 13 -> 12
+        for idx in [1, 2, 7, 8, 13, 12]:
+            self.play(search_square.animate.move_to(codebook_grid[idx].get_center()), run_time=0.15)
+        # finished sliding around 63.7s
+
+        # Animate target VQ cell mapping highlight and fade out the search indicator
+        target_cell = codebook_grid[12]
+        self.play(
+            target_cell.animate.set_fill(BLUE, opacity=0.8),
+            FadeOut(search_square),
+            run_time=0.5
+        ) # finishes at 64.2s
+
+        # Wait until 1:08s (68.0 - 64.2 = 3.8)
+        self.wait(3.8)
+
+        # 1:08s: Vocabulary size text appears
+        self.play(Write(vocab_size_text), run_time=1.0) # finishes at 69.0s
+
+        # Wait until 1:12s (72.0 - 69.0 = 3.0)
+        self.wait(3.0)
+
+        # 1:12s: Embedding dim text appears
+        self.play(Write(embedding_dim_text), run_time=1.0) # finishes at 73.0s
+
+        # Wait until 1:28s (88.0 - 73.0 = 15.0)
         self.wait(15.0)
+
+        # 1:28s: C-ViViT box appears
+        self.play(FadeIn(phenaki_box), FadeIn(phenaki_text), run_time=1.5) # finishes at 89.5s
+
+        # Wait until 1:42s (102.0 - 89.5 = 12.5)
+        self.wait(12.5)
+
+        # 1:42s: ST-ViViT box appears
+        self.play(FadeIn(genie_box), FadeIn(genie_text), run_time=1.5) # finishes at 103.5s
+
+        # Wait until end of audio (114.36s total)
+        self.wait(10.86)
 
 
 class Section222LatentActionModel(Scene):
