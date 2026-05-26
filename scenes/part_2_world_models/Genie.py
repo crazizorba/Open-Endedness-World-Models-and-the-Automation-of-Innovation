@@ -809,28 +809,33 @@ class Section221VideoTokenizer(Scene):
 
 class Section222LatentActionModel(Scene):
     def construct(self):
-        title = Tex(r"\text{\textbf{Component 2: Latent Action Model (LAM)}}", color=WHITE).to_edge(UP).scale(1.2)
-        self.play(Write(title))
-        self.wait(2.0)
+        # Add audio
+        self.add_sound(os.path.join(os.path.dirname(__file__), "assets", "Genie_LAM.wav"))
+
+        title = Tex(r"\text{\textbf{Component 2: Latent Action Model (LAM)}}", color=WHITE).to_edge(UP, buff=1.0).scale(1.2)
 
         # Inputs at left: past frames x_{1:t} and target x_{t+1}
         past_frames = VGroup(*[
             Rectangle(width=1.1, height=0.8, fill_opacity=0.3, fill_color=BLUE_E, stroke_color=BLUE)
             for _ in range(3)
-        ]).arrange(RIGHT, buff=-0.75).shift(LEFT * 5.0 + UP * 0.8)
-        past_label = Tex(r"\text{Past } $x_{1:t}$", color=BLUE).next_to(past_frames, DOWN, buff=0.1).scale(0.75)
+        ]).arrange(RIGHT, buff=-0.75).shift(LEFT * 5.8 + UP * 0.8)
+        past_label = Tex(r"\text{Past} $x_{1:t}$", color=BLUE).next_to(past_frames, DOWN, buff=0.1).scale(0.75)
+        past_frames.set_z_index(2)
+        past_label.set_z_index(2)
 
-        future_frame = Rectangle(width=1.1, height=0.8, fill_opacity=0.3, fill_color=GREEN_E, stroke_color=GREEN).shift(LEFT * 5.0 + DOWN * 0.8)
-        future_label = Tex(r"\text{Future } $x_{t+1}$", color=GREEN).next_to(future_frame, DOWN, buff=0.1).scale(0.75)
+        future_frame = Rectangle(width=1.1, height=0.8, fill_opacity=0.3, fill_color=GREEN_E, stroke_color=GREEN).shift(LEFT * 5.8 + DOWN * 0.8)
+        future_label = Tex(r"\text{Future} $x_{t+1}$", color=GREEN).next_to(future_frame, DOWN, buff=0.1).scale(0.75)
+        future_frame.set_z_index(2)
+        future_label.set_z_index(2)
 
         # LAM Encoder Box
-        encoder_box = RoundedRectangle(width=2.8, height=1.8, color=ORANGE, corner_radius=0.1).shift(LEFT * 1.5)
+        encoder_box = RoundedRectangle(width=2.4, height=1.6, color=ORANGE, corner_radius=0.1).shift(LEFT * 3.1)
         encoder_label = Tex(r"\text{\textbf{LAM Encoder}} \\ \text{Compresses transitions} \\ \text{into actions}", color=ORANGE)
         fit_in_box(encoder_label, encoder_box)
 
         # Quantizer & Codebook (|A| = 8)
-        action_title = Tex(r"\text{\textbf{Latent Action Space}}", color=WHITE).shift(RIGHT * 1.6 + UP * 1.3).scale(0.8)
-        action_specs = Tex(r"\text{Vocabulary } $|A| = 8$ \\ \text{Embedding Dim = 32}", color=GRAY).next_to(action_title, DOWN, buff=0.1).scale(0.7)
+        action_title = Tex(r"\text{\textbf{Latent Action Space}}", color=WHITE).shift(RIGHT * 0.1 + UP * 1.3).scale(0.8)
+        action_specs = Tex(r"\text{Vocabulary} $|A| = 8$ \\ \text{Embedding Dim = 32}", color=GRAY).next_to(action_title, DOWN, buff=0.1).scale(0.7)
         
         actions_grid = VGroup(*[
             Circle(radius=0.2, color=ORANGE, fill_opacity=0.2, fill_color=ORANGE)
@@ -842,7 +847,7 @@ class Section222LatentActionModel(Scene):
         ])
 
         # LAM Decoder Box
-        decoder_box = RoundedRectangle(width=2.8, height=1.8, color=ORANGE, corner_radius=0.1).shift(RIGHT * 4.6)
+        decoder_box = RoundedRectangle(width=2.4, height=1.6, color=ORANGE, corner_radius=0.1).shift(RIGHT * 3.3)
         decoder_label = Tex(r"\text{\textbf{LAM Decoder}} \\ \text{Reconstructs future} \\ \text{using action } $a_t$", color=ORANGE)
         fit_in_box(decoder_label, decoder_box)
 
@@ -853,61 +858,137 @@ class Section222LatentActionModel(Scene):
         arrow_act_to_dec = Arrow(start=actions_grid.get_right(), end=decoder_box.get_left(), color=ORANGE)
 
         # Output reconstructed x_hat_{t+1}
-        reconstructed_frame = Rectangle(width=1.1, height=0.8, fill_opacity=0.3, fill_color=RED_E, stroke_color=RED).next_to(decoder_box, RIGHT, buff=0.6)
-        reconstructed_label = Tex(r"\text{Reconstruction} \\ $\hat{x}_{t+1}$", color=RED).next_to(reconstructed_frame, DOWN, buff=0.1).scale(0.75)
+        reconstructed_frame = Rectangle(width=1.1, height=0.8, fill_opacity=0.3, fill_color=RED_E, stroke_color=RED).shift(RIGHT * 5.8)
+        reconstructed_label = Tex(r"\text{$\hat{x}_{t+1}$", color=RED).next_to(reconstructed_frame, DOWN, buff=0.1).scale(0.75)
+        reconstructed_frame.set_z_index(2)
+        reconstructed_label.set_z_index(2)
         arrow_dec_to_rec = Arrow(start=decoder_box.get_right(), end=reconstructed_frame.get_left(), color=ORANGE)
 
-        # Training signal arrow (loss backprop)
-        loss_arrow = DoubleArrow(start=reconstructed_frame.get_bottom(), end=future_frame.get_bottom(), path_arc=-0.8, color=RED)
-        loss_label = Tex(r"\text{Training Signal (Reconstruction Loss)}", color=RED).next_to(loss_arrow, DOWN, buff=0.15).scale(0.75)
+        # Training signal arrow (loss backprop) - Square Orthogonal shape pointing to labels
+        line1 = Line(start=[5.8, -2.6, 0], end=reconstructed_label.get_bottom(), color=RED).add_tip(tip_length=0.2)
+        line_horiz = Line(start=[5.8, -2.6, 0], end=[-5.8, -2.6, 0], color=RED)
+        line2 = Line(start=[-5.8, -2.6, 0], end=future_label.get_bottom(), color=RED).add_tip(tip_length=0.2)
+        loss_arrow = VGroup(line1, line_horiz, line2)
+        loss_arrow.set_z_index(0)
 
-        # Sequential play
-        self.play(Create(past_frames), Write(past_label))
-        self.play(Create(future_frame), Write(future_label))
-        self.wait(1.0)
-        self.play(Create(arrow_past_to_enc), Create(arrow_fut_to_enc), Create(encoder_box), Write(encoder_label))
-        self.wait(1.0)
-        self.play(Create(arrow_enc_to_act), Create(actions_grid), Write(actions_labels), Write(action_title), Write(action_specs))
-        self.wait(1.0)
-        self.play(Create(arrow_act_to_dec), Create(decoder_box), Write(decoder_label))
-        self.wait(1.5)
+        loss_label = Tex(r"\text{Training Signal (Reconstruction Loss)}", color=RED).move_to(DOWN * 2.1).scale(0.7)
 
-        # Action trigger animation
-        self.play(actions_grid[2].animate.set_fill(ORANGE, opacity=0.8))
-        self.play(Create(arrow_dec_to_rec), Create(reconstructed_frame), Write(reconstructed_label))
-        self.play(Create(loss_arrow), Write(loss_label))
+        # Discarded text (positioned below title and above diagram)
+        discard_text = Tex(r"\text{\textbf{DISCARDED AT INFERENCE}}", color=RED).move_to([0, 2.25, 0]).scale(0.8)
+
+        # ==========================================
+        # ANIMATION TIMELINE
+        # ==========================================
+        # 0s -> wait 3s
         self.wait(3.0)
 
-        # Cross out LAM (discarded at inference)
-        cross_line1 = Line(start=[-5, 2.5, 0], end=[6, -2.5, 0], color=RED, stroke_width=6)
-        cross_line2 = Line(start=[-5, -2.5, 0], end=[6, 2.5, 0], color=RED, stroke_width=6)
-        discard_cross = VGroup(cross_line1, cross_line2)
-        discard_text = Tex(r"\text{\textbf{DISCARDED AT INFERENCE}}", color=RED).to_edge(DOWN, buff=1.0).scale(1.2)
+        # 3s: Title appears
+        self.play(Write(title), run_time=1.5) # finishes at 4.5s
 
-        self.play(Create(discard_cross), Write(discard_text))
-        self.wait(3.0)
+        # Wait until 13s (13.0 - 4.5 = 8.5)
+        self.wait(8.5)
 
-        # Fade out discarded components
-        discard_group = VGroup(encoder_box, encoder_label, decoder_box, decoder_label,
-                              arrow_past_to_enc, arrow_fut_to_enc, arrow_enc_to_act, arrow_act_to_dec,
-                              arrow_dec_to_rec, reconstructed_frame, reconstructed_label, loss_arrow, loss_label,
-                              future_frame, future_label, discard_cross, discard_text)
-        
-        self.play(FadeOut(discard_group))
-        
-        # Position remaining action space to center for next scene context
+        # 13s: Past frames + label appears
+        self.play(Create(past_frames), Write(past_label), run_time=1.5) # finishes at 14.5s
+
+        # Wait until 17s (17.0 - 14.5 = 2.5)
+        self.wait(2.5)
+
+        # 17s: Future frame + label appears
+        self.play(Create(future_frame), Write(future_label), run_time=1.5) # finishes at 18.5s
+
+        # Wait until 23s (23.0 - 18.5 = 4.5)
+        self.wait(4.5)
+
+        # 23s: LAM Encoder Box + arrows appear
         self.play(
-            actions_grid.animate.move_to(ORIGIN + DOWN * 1.0),
-            actions_labels.animate.move_to(ORIGIN + DOWN * 1.0),
-            action_title.animate.move_to(ORIGIN + UP * 0.5),
-            action_specs.animate.move_to(ORIGIN + UP * 0.0)
-        )
-        self.wait(5.0)
+            Create(arrow_past_to_enc),
+            Create(arrow_fut_to_enc),
+            Create(encoder_box),
+            Write(encoder_label),
+            run_time=1.5
+        ) # finishes at 24.5s
+
+        # Wait until 39s (39.0 - 24.5 = 14.5)
+        self.wait(14.5)
+
+        # 39s: Latent Action Space text appears
+        self.play(Write(action_title), Write(action_specs), run_time=1.5) # finishes at 40.5s
+
+        # Wait until 41s (41.0 - 40.5 = 0.5)
+        self.wait(0.5)
+
+        # 41s: 8 action buttons and connect arrow appear
+        self.play(
+            Create(actions_grid),
+            Write(actions_labels),
+            Create(arrow_enc_to_act),
+            run_time=1.5
+        ) # finishes at 42.5s
+
+        # Wait until 48s (48.0 - 42.5 = 5.5)
+        self.wait(5.5)
+
+        # 48s: Zoom in/out of Past frames
+        self.play(past_frames.animate.scale(1.2), past_label.animate.scale(1.2), run_time=0.4) # finishes at 48.4s
+        self.play(past_frames.animate.scale(1/1.2), past_label.animate.scale(1/1.2), run_time=0.4) # finishes at 48.8s
+
+        # Wait until 50s (50.0 - 48.8 = 1.2)
+        self.wait(1.2)
+
+        # 50s: LAM Decoder Box + connect arrow appear
+        self.play(
+            Create(arrow_act_to_dec),
+            Create(decoder_box),
+            Write(decoder_label),
+            run_time=1.5
+        ) # finishes at 51.5s
+
+        # Wait until 56s (56.0 - 51.5 = 4.5)
+        self.wait(4.5)
+
+        # 56s: Reconstruction box + connect arrow appear
+        self.play(
+            actions_grid[2].animate.set_fill(ORANGE, opacity=0.8), # action trigger
+            Create(arrow_dec_to_rec),
+            Create(reconstructed_frame),
+            Write(reconstructed_label),
+            run_time=1.5
+        ) # finishes at 57.5s
+
+        # Wait until 1:03s (63.0 - 57.5 = 5.5)
+        self.wait(5.5)
+
+        # 1:03s: Zoom in/out of Reconstruction box
+        self.play(reconstructed_frame.animate.scale(1.2), reconstructed_label.animate.scale(1.2), run_time=0.4) # finishes at 63.4s
+        self.play(reconstructed_frame.animate.scale(1/1.2), reconstructed_label.animate.scale(1/1.2), run_time=0.4) # finishes at 63.8s
+
+        # Wait until 1:05s (65.0 - 63.8 = 1.2)
+        self.wait(1.2)
+
+        # 1:05s: Zoom in/out of Future frame
+        self.play(future_frame.animate.scale(1.2), future_label.animate.scale(1.2), run_time=0.4) # finishes at 65.4s
+        self.play(future_frame.animate.scale(1/1.2), future_label.animate.scale(1/1.2), run_time=0.4) # finishes at 65.8s
+
+        # Wait until 1:08s (68.0 - 65.8 = 2.2)
+        self.wait(2.2)
+
+        # 1:08s: Training Signal Loss Arrow + Label appears
+        self.play(Create(loss_arrow), Write(loss_label), run_time=1.5) # finishes at 69.5s
+
+        # Wait until 1:29s (89.0 - 69.5 = 19.5)
+        self.wait(19.5)
+
+        # 1:29s: Discarded text appears (diagram remains on screen)
+        self.play(Write(discard_text), run_time=1.5) # finishes at 90.5s
+
+        # Wait until the end of audio (95.52s)
+        self.wait(5.02)
 
 
 class Section223DynamicsModel(Scene):
     def construct(self):
-        title = Tex(r"\text{\textbf{Component 3: Dynamics Model (MaskGIT)}}", color=WHITE).to_edge(UP).scale(1.2)
+        title = Tex(r"\text{\textbf{Component 3: Dynamics Model (MaskGIT)}}", color=WHITE).to_edge(UP, buff=1.0).scale(1.2)
         self.play(Write(title))
         self.wait(2.0)
 
