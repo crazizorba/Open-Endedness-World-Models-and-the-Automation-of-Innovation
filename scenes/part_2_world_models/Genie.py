@@ -252,6 +252,9 @@ class Section1IntroductionPart1(Scene):
 
 class Section1IntroductionPart2(Scene):
     def construct(self):
+        # Add audio
+        self.add_sound(os.path.join(os.path.dirname(__file__), "assets", "Genie_Intro_Part2.wav"))
+
         # =========================================================================
         # PHASE 4: MODEL COMPARISON TABLE
         # =========================================================================
@@ -293,6 +296,7 @@ class Section1IntroductionPart2(Scene):
         line_top = Line(start=[-5.5, 1.2, 0], end=[6.5, 1.2, 0], color=GRAY)
         line_bottom = Line(start=[-5.5, -2.4, 0], end=[6.5, -2.4, 0], color=GRAY)
 
+        # Timeline: 0s - Title
         self.play(Write(title_table))
         self.play(
             Create(line_header_top), 
@@ -300,83 +304,129 @@ class Section1IntroductionPart2(Scene):
             Create(line_bottom),
             run_time=1.0
         )
-        # Hiện tất cả các tiêu đề cột cùng lúc
         self.play(*[Write(h) for h in headers], run_time=1.0)
-        self.wait(1.5) # [Dừng] Bạn giải thích cấu trúc bảng gồm 3 cột chính...
 
         # -----------------------------------------------------------------
         # HÀNG 1: World Models (e.g. GAIA-2)
         # -----------------------------------------------------------------
-        # Bước 1.1: Hiện thông tin cơ bản của lớp World Models
-        self.play(Write(r1_class), run_time=1)
-        self.play(Write(r1_data), run_time=1)
-        self.play(Write(r1_control), run_time=1)
-        self.play(Write(r1_ex), run_time=1)
-        self.wait(1.0) # [Dừng] Bạn nói về việc mô hình này kiểm soát tốt ở mức frame-level nhưng...
+        # Timeline: 12s - Row 1 class + ex
+        self.wait(9.0)
+        self.play(Write(r1_class), Write(r1_ex), run_time=1.0)
         
-        # Bước 1.2: Đóng khung đỏ để nhấn mạnh điểm yếu (Costly)
-        self.play(Create(r1_drawback_box))
-        self.play(Write(r1_drawback_lbl), run_time=1)
-        self.wait(2.5) # [Dừng] Giải thích tại sao việc cần nhãn hành động lại tốn kém.
+        # Timeline: 16s - Row 1 Frame-level control
+        self.wait(3.0)
+        self.play(Write(r1_control), run_time=1.0)
+
+        # Timeline: 21s - Row 1 Video-Action + box đỏ + drawback
+        self.wait(4.0)
+        self.play(
+            Write(r1_data), 
+            Create(r1_drawback_box), 
+            Write(r1_drawback_lbl),
+            run_time=1.5
+        )
 
         # -----------------------------------------------------------------
         # HÀNG 2: Video Models (e.g. Veo 2)
         # -----------------------------------------------------------------
-        # Bước 2.1: Hiện thông tin cơ bản của lớp Video Models
-        self.play(Write(r2_class), run_time=1)
-        self.play(Write(r2_data), run_time=1)
-        self.play(Write(r2_control), run_time=1)
-        self.play(Write(r2_ex), run_time=1)
-        self.wait(1.0) # [Dừng] Bạn nói về việc Video Model chỉ cần văn bản nhưng...
+        # Timeline: 30s - Row 2 class + ex
+        self.wait(7.5)
+        self.play(Write(r2_class), Write(r2_ex), run_time=1.0)
         
-        # Bước 2.2: Đóng khung đỏ nhấn mạnh điểm yếu (Không có frame control)
-        self.play(Create(r2_drawback_box))
-        self.play(Write(r2_drawback_lbl), run_time=1)
-        self.wait(2.5) # [Dừng] Giải thích việc thiếu kiểm soát từng khung hình khiến nó không làm được simulator.
+        # Timeline: 36s - Row 2 Video + Text
+        self.wait(5.0)
+        self.play(Write(r2_data), run_time=1.0)
+
+        # Timeline: 41s - Row 2 Video-level + box đỏ + drawback
+        self.wait(4.0)
+        self.play(
+            Write(r2_control), 
+            Create(r2_drawback_box), 
+            Write(r2_drawback_lbl),
+            run_time=1.5
+        )
 
         # -----------------------------------------------------------------
-        # HÀNG 3: NGÔI SAO CHÍNH - GENIE
+        # HÀNG 3: GENIE
         # -----------------------------------------------------------------    
-        # Bước 3.1: Viết các thông số vượt trội của Genie
-        self.play(Write(r3_class), run_time=1)
-        self.play(Write(r3_data), run_time=1)
-        self.play(Write(r3_control), run_time=1)
-        self.wait(0.5)
-
-        # Bước 3.2: Chiếu dải sáng Highlight màu vàng gold cho hàng Genie trước để tạo sự chú ý
-        self.play(FadeIn(genie_highlight, scale=0.9), run_time=0.8)
-        self.wait(1.0) # [Dừng] Nhấn mạnh sự kết hợp hoàn hảo...
+        # Timeline: 51s - Row 3 highlight + Genie class text
+        self.wait(8.5)
+        self.play(FadeIn(genie_highlight, scale=0.9), Write(r3_class), run_time=1.0)
         
-        # Bước 3.3: Xuất hiện kết luận tổng kết ở đáy bảng
-        self.play(Write(genie_label_desc), run_time=1.0)
-        self.wait(4.0)
+        # Timeline: 58s - Row 3 Video data text
+        self.wait(6.0)
+        self.play(Write(r3_data), run_time=1.0)
+        
+        # Timeline: 1:04s (64s) - Row 3 control + summary description
+        self.wait(5.0)
+        self.play(Write(r3_control), Write(genie_label_desc), run_time=1.5)
 
         # =========================================================================
         # PHASE 5: GENIE GOAL DIAGRAM
         # =========================================================================
+        # Timeline: 1:08s (68s) - Title Goal (FadeOut comparison table at 67s)
+        self.wait(1.5)
         self.play(
             FadeOut(title_table), FadeOut(line_header_top), FadeOut(line_top), FadeOut(line_bottom),
             FadeOut(genie_highlight), FadeOut(genie_label_desc),
             *[FadeOut(h) for h in headers],
             FadeOut(r1_class), FadeOut(r1_data), FadeOut(r1_control), FadeOut(r1_ex), FadeOut(r1_drawback_box), FadeOut(r1_drawback_lbl),
             FadeOut(r2_class), FadeOut(r2_data), FadeOut(r2_control), FadeOut(r2_ex), FadeOut(r2_drawback_box), FadeOut(r2_drawback_lbl),
-            FadeOut(r3_class), FadeOut(r3_data), FadeOut(r3_control)
+            FadeOut(r3_class), FadeOut(r3_data), FadeOut(r3_control),
+            run_time=1.0
         )
 
         title_goal = Tex(r"\text{\textbf{Mục tiêu của Genie}}", color=GOLD).to_edge(UP, buff=1.0).scale(1.1)
 
-        desc_goal = Tex(
-            r"``Huấn luyện một \textbf{generative world model} từ \textbf{internet videos},\\",
-            r"có thể được sử dụng làm \textbf{simulator} cho \textbf{embodied AGI}\\",
-            r"và một hình thức \textbf{generative entertainment} mới.''",
-            tex_to_color_map={
-                "generative world model": GOLD,
-                "internet videos": ORANGE,
-                "simulator": PURPLE_C,
-                "embodied AGI": GREEN,
-                "generative entertainment": BLUE
-            }
-        ).scale(0.7).arrange(DOWN, buff=0.15).next_to(title_goal, DOWN, buff=0.8)
+        # Split desc_goal into word-by-word groups for sequential text-diagram sync
+        part1_specs = [
+            ("``Huấn", WHITE, False),
+            ("luyện", WHITE, False),
+            ("một", WHITE, False),
+            ("generative", GOLD, True),
+            ("world", GOLD, True),
+            ("model", GOLD, True),
+            ("từ", WHITE, False),
+            ("internet", ORANGE, True),
+            ("videos,", ORANGE, True)
+        ]
+        desc_part1 = VGroup(*[
+            Tex(rf"\text{{\textbf{{{text}}}}}" if is_bold else rf"\text{{{text}}}", color=col)
+            for text, col, is_bold in part1_specs
+        ]).arrange(RIGHT, buff=0.08).scale(0.7)
+
+        part2_specs = [
+            ("có", WHITE, False),
+            ("thể", WHITE, False),
+            ("được", WHITE, False),
+            ("sử", WHITE, False),
+            ("dụng", WHITE, False),
+            ("làm", WHITE, False),
+            ("simulator", PURPLE_C, True),
+            ("cho", WHITE, False),
+            ("embodied", GREEN, True),
+            ("AGI", GREEN, True)
+        ]
+        desc_part2 = VGroup(*[
+            Tex(rf"\text{{\textbf{{{text}}}}}" if is_bold else rf"\text{{{text}}}", color=col)
+            for text, col, is_bold in part2_specs
+        ]).arrange(RIGHT, buff=0.08).scale(0.7)
+
+        part3_specs = [
+            ("và", WHITE, False),
+            ("một", WHITE, False),
+            ("hình", WHITE, False),
+            ("thức", WHITE, False),
+            ("generative", BLUE, True),
+            ("entertainment", BLUE, True),
+            ("mới.''", WHITE, False)
+        ]
+        desc_part3 = VGroup(*[
+            Tex(rf"\text{{\textbf{{{text}}}}}" if is_bold else rf"\text{{{text}}}", color=col)
+            for text, col, is_bold in part3_specs
+        ]).arrange(RIGHT, buff=0.08).scale(0.7)
+        
+        desc_goal = VGroup(desc_part1, desc_part2, desc_part3).arrange(DOWN, buff=0.15).next_to(title_goal, DOWN, buff=0.8)
 
         input_goal_box = RoundedRectangle(width=2.0, height=1.0, color=ORANGE, fill_color=ORANGE, fill_opacity=0.15).shift(LEFT * 4.5 + DOWN * 1.5)
         input_goal_label = Tex(r"\text{\textbf{Videos}}", color=ORANGE).scale(0.7)
@@ -399,15 +449,37 @@ class Section1IntroductionPart2(Scene):
 
         arrow_genie_to_game = Arrow(start=genie_circle.get_right() + DOWN * 0.2, end=game_box.get_left(), color=BLUE, buff=0.15)
 
-        self.play(Write(title_goal))
-        self.play(FadeIn(desc_goal, shift=UP * 0.5))
-        self.wait(2.0)
-        self.play(Create(input_goal_box), Write(input_goal_label))
-        self.play(Create(arrow_input_to_genie), Create(genie_circle), Write(genie_circle_lbl))
+        self.play(Write(title_goal), run_time=1.0)
+        
+        # Timeline: 1:15s (75s) - Flow starts with sequential text + simultaneous boxes
+        self.wait(6.0)
+        
+        # Step 1: Internet Videos text (word-by-word) and box Videos + Genie circle flow
+        self.play(
+            LaggedStart(*[Write(w) for w in desc_part1], lag_ratio=0.15, run_time=2.5),
+            Create(input_goal_box), Write(input_goal_label),
+            Create(arrow_input_to_genie), Create(genie_circle), Write(genie_circle_lbl),
+            run_time=2.5
+        )
+        
+        # Timeline: 1:25s (85s) - embodied AGI text (word-by-word) and Embodied AGI box
+        self.wait(7.5)
+        self.play(
+            LaggedStart(*[Write(w) for w in desc_part2], lag_ratio=0.15, run_time=2.0),
+            Create(arrow_genie_to_robot), Create(robot_box), Write(robot_lbl),
+            run_time=2.0
+        )
+        
+        # Timeline: 1:28s (88s) - Generative entertainment text (word-by-word) and Generative entertainment box
         self.wait(1.0)
-        self.play(Create(arrow_genie_to_robot), Create(robot_box), Write(robot_lbl))
-        self.play(Create(arrow_genie_to_game), Create(game_box), Write(game_lbl))
-        self.wait(10.0)
+        self.play(
+            LaggedStart(*[Write(w) for w in desc_part3], lag_ratio=0.15, run_time=2.0),
+            Create(arrow_genie_to_game), Create(game_box), Write(game_lbl),
+            run_time=2.0
+        )
+        
+        # Wait until audio ends (95.0s)
+        self.wait(5.0)
 
 
 class Section21Methodology(Scene):
@@ -477,7 +549,7 @@ class Section21Methodology(Scene):
 
 class Section221VideoTokenizer(Scene):
     def construct(self):
-        title = Tex(r"\text{\textbf{Component 1: Video Tokenizer (ST-ViViT)}}", color=WHITE).to_edge(UP).scale(1.2)
+        title = Tex(r"\text{\textbf{Component 1: Video Tokenizer (ST-ViViT)}}", color=WHITE).to_edge(UP, buff=1.0).scale(1.2)
         self.play(Write(title))
         self.wait(2.0)
 
@@ -487,7 +559,7 @@ class Section221VideoTokenizer(Scene):
             rect = Rectangle(width=1.8, height=1.1, stroke_color=BLUE_C, stroke_width=2, fill_color=BLUE_E, fill_opacity=0.25)
             rect.shift(RIGHT * 0.25 * i + UP * 0.15 * i)
             video_block.add(rect)
-        video_block.move_to(LEFT * 4.5 + UP * 0.8)
+        video_block.move_to(LEFT * 4.5 + UP * 1.3)
         
         # Grid lines on the front face to show spatiotemporal patchification
         front_rect = video_block[-1]
@@ -503,7 +575,7 @@ class Section221VideoTokenizer(Scene):
         video_label = Tex(r"\text{Video } $x_{1:T}$ \\ \text{160 } $\times$ \text{ 90, } $T=16$", color=WHITE).next_to(video_block, DOWN).scale(0.8)
 
         # ST-ViViT Box
-        encoder_box = RoundedRectangle(width=2.8, height=2.0, color=BLUE, corner_radius=0.1).shift(LEFT * 0.6 + UP * 0.8)
+        encoder_box = RoundedRectangle(width=2.8, height=2.0, color=BLUE, corner_radius=0.1).shift(LEFT * 0.6 + UP * 1.3)
         encoder_label = Tex(r"\text{\textbf{ST-ViViT Encoder}} \\ \text{Spatiotemporal} \\ \text{Transformer}", color=BLUE)
         fit_in_box(encoder_label, encoder_box)
 
@@ -513,7 +585,7 @@ class Section221VideoTokenizer(Scene):
         codebook_grid = VGroup(*[
             Square(side_length=0.25, stroke_color=GRAY, fill_opacity=0.1, fill_color=WHITE)
             for _ in range(25)
-        ]).arrange_in_grid(5, 5, buff=0.08).shift(RIGHT * 3.6 + UP * 0.8)
+        ]).arrange_in_grid(5, 5, buff=0.08).shift(RIGHT * 3.6 + UP * 1.3)
         codebook_label = Tex(r"\text{\textbf{VQ Codebook}} \\ \text{(Discrete Latent Space)}", color=WHITE).next_to(codebook_grid, DOWN).scale(0.8)
         codebook_specs = Tex(r"\text{Vocabulary Size } $|V| = 1024$ \\ \text{Embedding Dim } $D = 32$", color=GRAY).next_to(codebook_label, DOWN, buff=0.1).scale(0.7)
 
@@ -551,23 +623,23 @@ class Section221VideoTokenizer(Scene):
         phenaki_box = RoundedRectangle(width=5.0, height=1.4, color=RED, corner_radius=0.1)
         phenaki_text = VGroup(
             Tex(r"\text{\textbf{C-ViViT (Phenaki)}}", color=RED),
-            MathTex(r"\text{Complexity: } O(T^2)", color=RED),
-            Tex(r"\text{Quadratic memory growth with sequence length}", color=RED)
+            Tex(r"\text{Độ phức tạp: } $O(T^2)$", color=RED),
+            Tex(r"\text{Bộ nhớ tăng theo hàm bậc hai với chiều dài chuỗi}", color=RED)
         ).arrange(DOWN, buff=0.08)
         fit_in_box(phenaki_text, phenaki_box)
         
         genie_box = RoundedRectangle(width=5.0, height=1.4, color=GREEN, corner_radius=0.1)
         genie_text = VGroup(
             Tex(r"\text{\textbf{ST-ViViT (Genie)}}", color=GREEN),
-            MathTex(r"\text{Complexity: } O(T)", color=GREEN),
-            Tex(r"\text{Linear scaling, highly optimized memory}", color=GREEN)
+            Tex(r"\text{Độ phức tạp: } $O(T)$", color=GREEN),
+            Tex(r"\text{Tăng trưởng tuyến tính, tối ưu hóa bộ nhớ hiệu quả}", color=GREEN)
         ).arrange(DOWN, buff=0.08)
         fit_in_box(genie_text, genie_box)
         
         contrast_group.add(
             VGroup(phenaki_box, phenaki_text),
             VGroup(genie_box, genie_text)
-        ).arrange(RIGHT, buff=0.8).shift(DOWN * 2.2)
+        ).arrange(RIGHT, buff=0.8).shift(DOWN * 2.6)
         
         self.play(FadeIn(contrast_group))
         self.wait(15.0)
