@@ -9,6 +9,13 @@ my_template.add_to_preamble(r"\usepackage{xcolor}")
 my_template.add_to_preamble(r"\usepackage{amsmath}")
 config.tex_template = my_template
 
+
+class VietnameseScene(Scene):
+    def setup(self):
+        config.tex_template = my_template
+        super().setup()
+
+
 def fit_in_box(mobject, box, padding=0.15):
     max_w = box.width - 2 * padding
     max_h = box.height - 2 * padding
@@ -20,7 +27,7 @@ def fit_in_box(mobject, box, padding=0.15):
     mobject.move_to(box.get_center())
     return mobject
 
-class Section1IntroductionPart1(Scene):
+class Section1IntroductionPart1(VietnameseScene):
     def construct(self):
         # Add audio
         self.add_sound(os.path.join(os.path.dirname(__file__), "assets", "Genie_Intro_Part1.wav"))
@@ -250,7 +257,7 @@ class Section1IntroductionPart1(Scene):
         self.wait(4.2)
 
 
-class Section1IntroductionPart2(Scene):
+class Section1IntroductionPart2(VietnameseScene):
     def construct(self):
         # Add audio
         self.add_sound(os.path.join(os.path.dirname(__file__), "assets", "Genie_Intro_Part2.wav"))
@@ -451,7 +458,7 @@ class Section1IntroductionPart2(Scene):
         self.wait(5.0)
 
 
-class Section21Methodology(Scene):
+class Section21Methodology(VietnameseScene):
     def construct(self):
         # Add audio
         self.add_sound(os.path.join(os.path.dirname(__file__), "assets", "Genie_Components.wav"))
@@ -609,7 +616,7 @@ class Section21Methodology(Scene):
         self.wait(8.2)
 
 
-class Section221VideoTokenizer(Scene):
+class Section221VideoTokenizer(VietnameseScene):
     def construct(self):
         # Add audio
         self.add_sound(os.path.join(os.path.dirname(__file__), "assets", "Genie_Video_Tokenizer.wav"))
@@ -807,7 +814,7 @@ class Section221VideoTokenizer(Scene):
         self.wait(10.86)
 
 
-class Section222LatentActionModel(Scene):
+class Section222LatentActionModel(VietnameseScene):
     def construct(self):
         # Add audio
         self.add_sound(os.path.join(os.path.dirname(__file__), "assets", "Genie_LAM.wav"))
@@ -986,7 +993,7 @@ class Section222LatentActionModel(Scene):
         self.wait(5.02)
 
 
-class Section223DynamicsModel(Scene):
+class Section223DynamicsModel(VietnameseScene):
     def construct(self):
         # Add audio
         self.add_sound(os.path.join(os.path.dirname(__file__), "assets", "Genie_Dynamics_Model.wav"))
@@ -1186,131 +1193,7 @@ class Section223DynamicsModel(Scene):
         self.wait(23.18)
 
 
-# class Section23SpatiotemporalTransformer(Scene):
-#     def construct(self):
-#         title = Tex(r"\text{\textbf{Spatiotemporal (ST) Transformer Block}}", color=WHITE).to_edge(UP).scale(1.2)
-#         self.play(Write(title))
-#         self.wait(2.0)
-
-#         # Main block representing the ST-Transformer block
-#         st_block = RoundedRectangle(width=8.0, height=4.2, color=BLUE_D, stroke_width=2, fill_opacity=0.03).shift(DOWN * 0.4)
-#         st_title = Tex(r"\text{\textbf{ST-Transformer Block}}", color=BLUE_D).next_to(st_block, UP, aligned_edge=LEFT, buff=0.1).scale(0.8)
-
-#         self.play(Create(st_block), Write(st_title))
-#         self.wait(1.5)
-
-#         # Inner layers
-#         spatial_box = RoundedRectangle(width=6.2, height=0.9, color=BLUE_B, fill_opacity=0.1).shift(UP * 0.9 + DOWN * 0.4)
-#         spatial_label = Tex(r"\text{\textbf{Spatial Attention Layer}} \\ \text{Attends over: } $1 \times H \times W$ \text{ tokens}", color=WHITE)
-#         fit_in_box(spatial_label, spatial_box)
-#         spatial_math = MathTex(r"O(H \times W)", color=BLUE_A).next_to(spatial_box, RIGHT, buff=0.15).scale(0.8)
-
-#         temporal_box = RoundedRectangle(width=6.2, height=0.9, color=ORANGE, fill_opacity=0.1).shift(DOWN * 0.4)
-#         temporal_label = Tex(r"\text{\textbf{Temporal Attention Layer}} \\ \text{Attends over: } $T \times 1 \times 1$ \text{ tokens}", color=WHITE)
-#         fit_in_box(temporal_label, temporal_box)
-#         temporal_math = MathTex(r"O(T)", color=ORANGE).next_to(temporal_box, RIGHT, buff=0.15).scale(0.8)
-
-#         ffw_box = RoundedRectangle(width=6.2, height=0.9, color=GREEN, fill_opacity=0.1).shift(DOWN * 1.5)
-#         ffw_label = Tex(r"\text{\textbf{Feed-Forward Network (FFW) Layer}}", color=WHITE)
-#         fit_in_box(ffw_label, ffw_box)
-#         ffw_desc = Tex(r"\text{Omitted post-spatial FFW to optimize and enable massive scaling}", color=GREEN).next_to(ffw_box, DOWN, buff=0.15).scale(0.7)
-
-#         # Arrows showing execution flow
-#         arrow1 = Arrow(start=spatial_box.get_bottom(), end=temporal_box.get_top(), color=GRAY, buff=0.05)
-#         arrow2 = Arrow(start=temporal_box.get_bottom(), end=ffw_box.get_top(), color=GRAY, buff=0.05)
-
-#         self.play(Create(spatial_box), Write(spatial_label), Write(spatial_math))
-#         self.wait(2.0)
-#         self.play(Create(arrow1), Create(temporal_box), Write(temporal_label), Write(temporal_math))
-#         self.wait(2.0)
-        
-#         # Causal Mask annotation on Temporal layer
-#         mask_grid = VGroup(*[
-#             Square(side_length=0.14, stroke_color=GRAY, fill_opacity=0.1)
-#             for _ in range(16)
-#         ]).arrange_in_grid(4, 4, buff=0.02).next_to(temporal_box, LEFT, buff=0.25)
-        
-#         # Mask the upper triangular part (causal mask)
-#         for i in range(4):
-#             for j in range(i+1, 4):
-#                 mask_grid[i*4 + j].set_fill(RED, opacity=0.85).set_color(RED)
-        
-#         mask_label = Tex(r"\text{Causal Mask}", color=RED).next_to(mask_grid, DOWN, buff=0.05).scale(0.65)
-#         self.play(Create(mask_grid), Write(mask_label))
-#         self.wait(3.0)
-
-#         self.play(Create(arrow2), Create(ffw_box), Write(ffw_label), Write(ffw_desc))
-#         self.wait(15.0)
-
-
-# class Section24InferenceCycle(Scene):
-#     def construct(self):
-#         title = Tex(r"\text{\textbf{Autoregressive Inference Cycle}}", color=WHITE).to_edge(UP).scale(1.2)
-#         self.play(Write(title))
-#         self.wait(2.0)
-
-#         # Input Frame x_1
-#         frame_in = Rectangle(width=1.5, height=1.0, color=BLUE, fill_opacity=0.25).shift(LEFT * 5.0 + UP * 0.5)
-#         label_in = Tex(r"\text{Prompt Frame } $x_1$", color=BLUE).next_to(frame_in, DOWN, buff=0.1).scale(0.7)
-
-#         # Video Tokenizer Encoder
-#         enc_box = RoundedRectangle(width=2.2, height=1.1, color=BLUE, corner_radius=0.1).shift(LEFT * 2.2 + UP * 0.5)
-#         enc_label = Tex(r"\text{\textbf{Tokenizer}} \\ \text{Encoder}", color=BLUE)
-#         fit_in_box(enc_label, enc_box)
-
-#         # Dynamics Model
-#         dyn_box = RoundedRectangle(width=2.5, height=1.5, color=RED, corner_radius=0.1).shift(RIGHT * 1.0 + UP * 0.5)
-#         dyn_label = Tex(r"\text{\textbf{Dynamics Model}} \\ \text{Predict next token}", color=RED)
-#         fit_in_box(dyn_label, dyn_box)
-
-#         # Decoder
-#         dec_box = RoundedRectangle(width=2.2, height=1.1, color=BLUE, corner_radius=0.1).shift(RIGHT * 4.4 + UP * 0.5)
-#         dec_label = Tex(r"\text{\textbf{Tokenizer}} \\ \text{Decoder}", color=BLUE)
-#         fit_in_box(dec_label, dec_box)
-
-#         # Controller Button
-#         button_circle = Circle(radius=0.35, color=ORANGE, fill_color=ORANGE, fill_opacity=0.3).shift(RIGHT * 1.0 + DOWN * 1.5)
-#         button_label = Tex(r"\text{\textbf{User Action }} $a_t$ \\ \text{(8-Button Controller)}", color=ORANGE).next_to(button_circle, LEFT, buff=0.25).scale(0.7)
-
-#         # Output predicted x_hat_2
-#         frame_out = Rectangle(width=1.5, height=1.0, color=GREEN, fill_opacity=0.25).shift(RIGHT * 5.2 + DOWN * 1.5)
-#         label_out = Tex(r"\text{Output Frame } $\hat{x}_2$", color=GREEN).next_to(frame_out, DOWN, buff=0.1).scale(0.7)
-
-#         # Arrows
-#         arrow1 = Arrow(start=frame_in.get_right(), end=enc_box.get_left(), color=GRAY)
-#         arrow2 = Arrow(start=enc_box.get_right(), end=dyn_box.get_left(), color=BLUE)
-#         arrow3 = Arrow(start=dyn_box.get_right(), end=dec_box.get_left(), color=RED)
-#         arrow4 = Arrow(start=dec_box.get_bottom(), end=frame_out.get_top(), color=GREEN)
-#         arrow_act = Arrow(start=button_circle.get_top(), end=dyn_box.get_bottom(), color=ORANGE)
-
-#         # Auto-regressive loop arrow
-#         loop_arrow = Arrow(
-#             start=frame_out.get_left(), 
-#             end=frame_in.get_bottom(), 
-#             path_arc=0.7, 
-#             color=GOLD
-#         )
-#         loop_label = Tex(r"\text{\textbf{Autoregressive Loop}}", color=GOLD).next_to(loop_arrow, DOWN, buff=0.1).scale(0.75)
-
-#         self.play(Create(frame_in), Write(label_in))
-#         self.play(Create(arrow1), Create(enc_box), Write(enc_label))
-#         self.wait(1.0)
-#         self.play(Create(arrow2), Create(dyn_box), Write(dyn_label))
-#         self.wait(1.0)
-#         self.play(Create(arrow_act), Create(button_circle), Write(button_label))
-#         self.wait(1.5)
-
-#         # Highlight action press & loop flow
-#         self.play(button_circle.animate.set_fill(ORANGE, opacity=0.85))
-#         self.play(Create(arrow3), Create(dec_box), Write(dec_label))
-#         self.play(Create(arrow4), Create(frame_out), Write(label_out))
-#         self.wait(1.5)
-        
-#         self.play(Create(loop_arrow), Write(loop_label))
-#         self.wait(15.0)
-
-
-class Section3ScalingResults(Scene):
+class Section3ScalingResults(VietnameseScene):
     def construct(self):
         # Add audio
         self.add_sound(os.path.join(os.path.dirname(__file__), "assets", "Genie_Scale_Results.wav"))
@@ -1384,8 +1267,7 @@ class Section3ScalingResults(Scene):
         self.wait(14.92)
 
 
-
-class Section4QualitativeEmergent(Scene):
+class Section4QualitativeEmergent(VietnameseScene):
     def construct(self):
         # Add audio
         self.add_sound(os.path.join(os.path.dirname(__file__), "assets", "Genie_Qualitative_Results.wav"))
