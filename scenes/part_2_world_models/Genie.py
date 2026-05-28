@@ -988,78 +988,58 @@ class Section222LatentActionModel(Scene):
 
 class Section223DynamicsModel(Scene):
     def construct(self):
-        title = Tex(r"\text{\textbf{Component 3: Dynamics Model (MaskGIT)}}", color=WHITE).to_edge(UP, buff=1.0).scale(1.2)
-        self.play(Write(title))
-        self.wait(2.0)
+        # Add audio
+        self.add_sound(os.path.join(os.path.dirname(__file__), "assets", "Genie_Dynamics_Model.wav"))
 
-        # Additive Embeddings
-        add_title = Tex(r"\text{\textbf{Additive Action Embeddings}}", color=GRAY).shift(UP * 2.3).scale(0.9)
+        # 1. Main Title (split into parts for SurroundingRectangle highlight)
+        title_part1 = Tex(r"\text{\textbf{Component 3: Dynamics Model (}}", color=WHITE)
+        title_part2 = Tex(r"\text{\textbf{MaskGIT}}", color=WHITE)
+        title_part3 = Tex(r"\text{\textbf{)}}", color=WHITE)
+        title = VGroup(title_part1, title_part2, title_part3).arrange(RIGHT, buff=0.05).to_edge(UP, buff=1.0).scale(1.2)
         
-        token_rect = Square(side_length=0.9, color=BLUE, fill_color=BLUE_E, fill_opacity=0.3).shift(LEFT * 3.5 + UP * 1.2)
+        # Highlight Box for MaskGIT
+        highlight_box = SurroundingRectangle(title_part2, color=YELLOW, buff=0.1, stroke_width=2)
+
+        # 2. Additive Embeddings elements - Vertically Centered
+        add_title = Tex(r"\text{\textbf{Additive Action Embeddings}}", color=GRAY).shift(UP * 0.6).scale(0.9)
+        
+        token_rect = Square(side_length=0.9, color=BLUE, fill_color=BLUE_E, fill_opacity=0.3).shift(LEFT * 3.5 + DOWN * 0.5)
         token_label = MathTex("z_t", color=BLUE)
         fit_in_box(token_label, token_rect)
         token_desc = Tex(r"\text{Video Token}", color=BLUE).next_to(token_rect, DOWN, buff=0.1).scale(0.7)
 
-        plus_symbol = MathTex("+", font_size=36).shift(LEFT * 1.8 + UP * 1.2)
+        plus_symbol = MathTex("+", font_size=36).shift(LEFT * 1.8 + DOWN * 0.5)
 
-        action_rect = Square(side_length=0.9, color=ORANGE, fill_color=ORANGE, fill_opacity=0.3).shift(LEFT * 0.1 + UP * 1.2)
+        action_rect = Square(side_length=0.9, color=ORANGE, fill_color=ORANGE, fill_opacity=0.3).shift(LEFT * 0.1 + DOWN * 0.5)
         action_label = MathTex("e(a_t)", color=ORANGE)
         fit_in_box(action_label, action_rect)
         action_desc = Tex(r"\text{Action Embedding}", color=ORANGE).next_to(action_rect, DOWN, buff=0.1).scale(0.7)
 
-        equals_symbol = MathTex("=", font_size=36).shift(RIGHT * 1.5 + UP * 1.2)
+        equals_symbol = MathTex("=", font_size=36).shift(RIGHT * 1.5 + DOWN * 0.5)
 
-        combined_rect = Square(side_length=0.9, color=RED, fill_color=RED_E, fill_opacity=0.3).shift(RIGHT * 3.2 + UP * 1.2)
+        combined_rect = Square(side_length=0.9, color=RED, fill_color=RED_E, fill_opacity=0.3).shift(RIGHT * 3.2 + DOWN * 0.5)
         combined_label = MathTex("h_t", color=RED)
         fit_in_box(combined_label, combined_rect)
         combined_desc = Tex(r"\text{Combined Embedding}", color=RED).next_to(combined_rect, DOWN, buff=0.1).scale(0.7)
 
-        self.play(
-            Write(add_title),
-            Create(token_rect), Write(token_label), Write(token_desc)
-        )
-        self.play(Write(plus_symbol))
-        self.play(Create(action_rect), Write(action_label), Write(action_desc))
-        self.play(Write(equals_symbol))
-        self.play(Create(combined_rect), Write(combined_label), Write(combined_desc))
-        self.wait(5.0)
-
-        # Clear upper block to show masking details
-        self.play(FadeOut(token_rect), FadeOut(token_label), FadeOut(token_desc),
-                 FadeOut(plus_symbol), FadeOut(action_rect), FadeOut(action_label), FadeOut(action_desc),
-                 FadeOut(equals_symbol), FadeOut(combined_rect), FadeOut(combined_label), FadeOut(combined_desc),
-                 FadeOut(add_title))
-
-        # Masking Rate Slider
-        slider_line = Line(start=[-3.5, 0, 0], end=[3.5, 0, 0], color=GRAY)
+        # 3. Slider elements - Vertically Shifted Down to Center
+        slider_line = Line(start=[-3.5, -0.4, 0], end=[3.5, -0.4, 0], color=GRAY)
         slider_label = Tex(r"\text{\textbf{Masking Rate }} $\gamma$:", color=WHITE).next_to(slider_line, UP, aligned_edge=LEFT, buff=0.25).scale(0.85)
         slider_val = Tex(r"\text{0.5}", color=GOLD).next_to(slider_label, RIGHT, buff=0.2).scale(0.85)
-        slider_handle = Dot(point=[-1.0, 0, 0], color=GOLD, radius=0.14)
-        
-        self.play(Create(slider_line), Write(slider_label), Write(slider_val), Create(slider_handle))
-        self.wait(1.5)
+        slider_handle = Dot(point=[-1.0, -0.4, 0], color=GOLD, radius=0.14)
 
-        # Tokens grid
+        # 4. Grid elements - Vertically Shifted Down to Center
         tokens_grid = VGroup(*[
             Square(side_length=0.7, color=BLUE, fill_opacity=0.3, fill_color=BLUE)
             for _ in range(8)
-        ]).arrange(RIGHT, buff=0.2).shift(DOWN * 1.5)
+        ]).arrange(RIGHT, buff=0.2).shift(DOWN * 1.9)
         tokens_text = VGroup()
         for i in range(8):
             t_tex = MathTex(f"z_{{{i+1}}}")
             fit_in_box(t_tex, tokens_grid[i])
             tokens_text.add(t_tex)
 
-        self.play(Create(tokens_grid), Write(tokens_text))
-        self.wait(2.0)
-
-        # Slide representation
-        self.play(
-            slider_handle.animate.shift(RIGHT * 2.2),
-            Transform(slider_val, Tex(r"\text{0.85}", color=GOLD).next_to(slider_label, RIGHT, buff=0.2).scale(0.85))
-        )
-        
-        # Mask tokens (index 1, 3, 4, 6)
+        # Mask tokens actions
         masked_indices = [1, 3, 4, 6]
         mask_actions = []
         for idx in masked_indices:
@@ -1067,334 +1047,375 @@ class Section223DynamicsModel(Scene):
             new_q = Tex(r"\text{\textbf{?}}", color=RED)
             fit_in_box(new_q, tokens_grid[idx])
             mask_actions.append(Transform(tokens_text[idx], new_q))
-        
-        self.play(*mask_actions)
-        self.wait(3.0)
 
-        # Loss Function
+        # 5. Loss formula element - Enlarged & Vertically Positioned Higher for Spacing
         loss_formula = MathTex(
             r"\mathcal{L}_{\text{Dynamics}} = - \sum_{t=2}^{T} \log p(z_t \mid z_{<t}, a_{<t})", 
-            font_size=28, color=WHITE
-        ).shift(UP * 1.2)
-        self.play(Write(loss_formula))
-        self.wait(10.0)
+            font_size=36, color=WHITE
+        ).shift(UP * 1.5)
 
-
-class Section23SpatiotemporalTransformer(Scene):
-    def construct(self):
-        title = Tex(r"\text{\textbf{Spatiotemporal (ST) Transformer Block}}", color=WHITE).to_edge(UP).scale(1.2)
-        self.play(Write(title))
+        # ==========================================
+        # TIMELINE LOGIC
+        # ==========================================
+        # 0s -> wait 2s
         self.wait(2.0)
 
-        # Main block representing the ST-Transformer block
-        st_block = RoundedRectangle(width=8.0, height=4.2, color=BLUE_D, stroke_width=2, fill_opacity=0.03).shift(DOWN * 0.4)
-        st_title = Tex(r"\text{\textbf{ST-Transformer Block}}", color=BLUE_D).next_to(st_block, UP, aligned_edge=LEFT, buff=0.1).scale(0.8)
+        # 2s: Title appears
+        self.play(Write(title), run_time=1.5) # finishes at 3.5s
 
-        self.play(Create(st_block), Write(st_title))
-        self.wait(1.5)
+        # Wait until 19s (19.0 - 3.5 = 15.5)
+        self.wait(15.5)
 
-        # Inner layers
-        spatial_box = RoundedRectangle(width=6.2, height=0.9, color=BLUE_B, fill_opacity=0.1).shift(UP * 0.9 + DOWN * 0.4)
-        spatial_label = Tex(r"\text{\textbf{Spatial Attention Layer}} \\ \text{Attends over: } $1 \times H \times W$ \text{ tokens}", color=WHITE)
-        fit_in_box(spatial_label, spatial_box)
-        spatial_math = MathTex(r"O(H \times W)", color=BLUE_A).next_to(spatial_box, RIGHT, buff=0.15).scale(0.8)
+        # 19s: Additive label appears
+        self.play(Write(add_title), run_time=1.0) # finishes at 20.0s
 
-        temporal_box = RoundedRectangle(width=6.2, height=0.9, color=ORANGE, fill_opacity=0.1).shift(DOWN * 0.4)
-        temporal_label = Tex(r"\text{\textbf{Temporal Attention Layer}} \\ \text{Attends over: } $T \times 1 \times 1$ \text{ tokens}", color=WHITE)
-        fit_in_box(temporal_label, temporal_box)
-        temporal_math = MathTex(r"O(T)", color=ORANGE).next_to(temporal_box, RIGHT, buff=0.15).scale(0.8)
-
-        ffw_box = RoundedRectangle(width=6.2, height=0.9, color=GREEN, fill_opacity=0.1).shift(DOWN * 1.5)
-        ffw_label = Tex(r"\text{\textbf{Feed-Forward Network (FFW) Layer}}", color=WHITE)
-        fit_in_box(ffw_label, ffw_box)
-        ffw_desc = Tex(r"\text{Omitted post-spatial FFW to optimize and enable massive scaling}", color=GREEN).next_to(ffw_box, DOWN, buff=0.15).scale(0.7)
-
-        # Arrows showing execution flow
-        arrow1 = Arrow(start=spatial_box.get_bottom(), end=temporal_box.get_top(), color=GRAY, buff=0.05)
-        arrow2 = Arrow(start=temporal_box.get_bottom(), end=ffw_box.get_top(), color=GRAY, buff=0.05)
-
-        self.play(Create(spatial_box), Write(spatial_label), Write(spatial_math))
-        self.wait(2.0)
-        self.play(Create(arrow1), Create(temporal_box), Write(temporal_label), Write(temporal_math))
-        self.wait(2.0)
-        
-        # Causal Mask annotation on Temporal layer
-        mask_grid = VGroup(*[
-            Square(side_length=0.14, stroke_color=GRAY, fill_opacity=0.1)
-            for _ in range(16)
-        ]).arrange_in_grid(4, 4, buff=0.02).next_to(temporal_box, LEFT, buff=0.25)
-        
-        # Mask the upper triangular part (causal mask)
-        for i in range(4):
-            for j in range(i+1, 4):
-                mask_grid[i*4 + j].set_fill(RED, opacity=0.85).set_color(RED)
-        
-        mask_label = Tex(r"\text{Causal Mask}", color=RED).next_to(mask_grid, DOWN, buff=0.05).scale(0.65)
-        self.play(Create(mask_grid), Write(mask_label))
-        self.wait(3.0)
-
-        self.play(Create(arrow2), Create(ffw_box), Write(ffw_label), Write(ffw_desc))
-        self.wait(15.0)
-
-
-class Section24InferenceCycle(Scene):
-    def construct(self):
-        title = Tex(r"\text{\textbf{Autoregressive Inference Cycle}}", color=WHITE).to_edge(UP).scale(1.2)
-        self.play(Write(title))
+        # Wait until 22s (22.0 - 20.0 = 2.0)
         self.wait(2.0)
 
-        # Input Frame x_1
-        frame_in = Rectangle(width=1.5, height=1.0, color=BLUE, fill_opacity=0.25).shift(LEFT * 5.0 + UP * 0.5)
-        label_in = Tex(r"\text{Prompt Frame } $x_1$", color=BLUE).next_to(frame_in, DOWN, buff=0.1).scale(0.7)
+        # 22s: Video Token box appears
+        self.play(
+            Create(token_rect), 
+            Write(token_label), 
+            Write(token_desc),
+            run_time=1.0
+        ) # finishes at 23.0s
 
-        # Video Tokenizer Encoder
-        enc_box = RoundedRectangle(width=2.2, height=1.1, color=BLUE, corner_radius=0.1).shift(LEFT * 2.2 + UP * 0.5)
-        enc_label = Tex(r"\text{\textbf{Tokenizer}} \\ \text{Encoder}", color=BLUE)
-        fit_in_box(enc_label, enc_box)
+        # Wait until 25s (25.0 - 23.0 = 2.0)
+        self.wait(2.0)
 
-        # Dynamics Model
-        dyn_box = RoundedRectangle(width=2.5, height=1.5, color=RED, corner_radius=0.1).shift(RIGHT * 1.0 + UP * 0.5)
-        dyn_label = Tex(r"\text{\textbf{Dynamics Model}} \\ \text{Predict next token}", color=RED)
-        fit_in_box(dyn_label, dyn_box)
+        # 25s: Action Embedding box + plus sign appear
+        self.play(
+            Write(plus_symbol),
+            Create(action_rect), 
+            Write(action_label), 
+            Write(action_desc),
+            run_time=1.0
+        ) # finishes at 26.0s
 
-        # Decoder
-        dec_box = RoundedRectangle(width=2.2, height=1.1, color=BLUE, corner_radius=0.1).shift(RIGHT * 4.4 + UP * 0.5)
-        dec_label = Tex(r"\text{\textbf{Tokenizer}} \\ \text{Decoder}", color=BLUE)
-        fit_in_box(dec_label, dec_box)
+        # Wait until 30s (30.0 - 26.0 = 4.0)
+        self.wait(4.0)
 
-        # Controller Button
-        button_circle = Circle(radius=0.35, color=ORANGE, fill_color=ORANGE, fill_opacity=0.3).shift(RIGHT * 1.0 + DOWN * 1.5)
-        button_label = Tex(r"\text{\textbf{User Action }} $a_t$ \\ \text{(8-Button Controller)}", color=ORANGE).next_to(button_circle, LEFT, buff=0.25).scale(0.7)
+        # 30s: Combined Embedding box + equal sign appear
+        self.play(
+            Write(equals_symbol),
+            Create(combined_rect), 
+            Write(combined_label), 
+            Write(combined_desc),
+            run_time=1.5
+        ) # finishes at 31.5s
 
-        # Output predicted x_hat_2
-        frame_out = Rectangle(width=1.5, height=1.0, color=GREEN, fill_opacity=0.25).shift(RIGHT * 5.2 + DOWN * 1.5)
-        label_out = Tex(r"\text{Output Frame } $\hat{x}_2$", color=GREEN).next_to(frame_out, DOWN, buff=0.1).scale(0.7)
+        # Wait until 45s (45.0 - 31.5 = 13.5)
+        self.wait(13.5)
 
-        # Arrows
-        arrow1 = Arrow(start=frame_in.get_right(), end=enc_box.get_left(), color=GRAY)
-        arrow2 = Arrow(start=enc_box.get_right(), end=dyn_box.get_left(), color=BLUE)
-        arrow3 = Arrow(start=dyn_box.get_right(), end=dec_box.get_left(), color=RED)
-        arrow4 = Arrow(start=dec_box.get_bottom(), end=frame_out.get_top(), color=GREEN)
-        arrow_act = Arrow(start=button_circle.get_top(), end=dyn_box.get_bottom(), color=ORANGE)
+        # 45s: Clear upper block + highlight MaskGIT on title
+        self.play(
+            FadeOut(token_rect), FadeOut(token_label), FadeOut(token_desc),
+            FadeOut(plus_symbol), FadeOut(action_rect), FadeOut(action_label), FadeOut(action_desc),
+            FadeOut(equals_symbol), FadeOut(combined_rect), FadeOut(combined_label), FadeOut(combined_desc),
+            FadeOut(add_title),
+            Create(highlight_box),
+            run_time=1.0
+        ) # finishes at 46.0s
 
-        # Auto-regressive loop arrow
-        loop_arrow = Arrow(
-            start=frame_out.get_left(), 
-            end=frame_in.get_bottom(), 
-            path_arc=0.7, 
-            color=GOLD
+        # Wait until 48s (48.0 - 46.0 = 2.0)
+        self.wait(2.0)
+
+        # 48s: Slider, label, handle appear (no slider_val "0.5" yet)
+        self.play(
+            Create(slider_line), 
+            Write(slider_label), 
+            Create(slider_handle),
+            run_time=1.5
+        ) # finishes at 49.5s
+
+        # Wait until 54s (54.0 - 49.5 = 4.5)
+        self.wait(4.5)
+
+        # 54s: Grid of tokens appears
+        self.play(
+            Create(tokens_grid), 
+            Write(tokens_text),
+            run_time=1.5
+        ) # finishes at 55.5s
+
+        # Wait until 1:02s (62.0 - 55.5 = 6.5)
+        self.wait(6.5)
+
+        # 1:02s: Slider value "0.5" appears + zoom grid in/out
+        self.play(
+            FadeIn(slider_val),
+            tokens_grid.animate.scale(1.15),
+            tokens_text.animate.scale(1.15),
+            run_time=0.5
         )
-        loop_label = Tex(r"\text{\textbf{Autoregressive Loop}}", color=GOLD).next_to(loop_arrow, DOWN, buff=0.1).scale(0.75)
+        self.play(
+            tokens_grid.animate.scale(1/1.15),
+            tokens_text.animate.scale(1/1.15),
+            run_time=0.5
+        ) # finishes at 63.0s
 
-        self.play(Create(frame_in), Write(label_in))
-        self.play(Create(arrow1), Create(enc_box), Write(enc_label))
-        self.wait(1.0)
-        self.play(Create(arrow2), Create(dyn_box), Write(dyn_label))
-        self.wait(1.0)
-        self.play(Create(arrow_act), Create(button_circle), Write(button_label))
-        self.wait(1.5)
+        # Wait until 1:12s (72.0 - 63.0 = 9.0)
+        self.wait(9.0)
 
-        # Highlight action press & loop flow
-        self.play(button_circle.animate.set_fill(ORANGE, opacity=0.85))
-        self.play(Create(arrow3), Create(dec_box), Write(dec_label))
-        self.play(Create(arrow4), Create(frame_out), Write(label_out))
-        self.wait(1.5)
+        # 1:12s: Slider handle shift + value update to "0.85"
+        self.play(
+            slider_handle.animate.shift(RIGHT * 2.2),
+            Transform(slider_val, Tex(r"\text{0.85}", color=GOLD).next_to(slider_label, RIGHT, buff=0.2).scale(0.85)),
+            run_time=1.5
+        ) # finishes at 73.5s
+
+        # Wait until 1:20s (80.0 - 73.5 = 6.5)
+        self.wait(6.5)
+
+        # 1:20s: Question marks "?" appear on masked grid blocks
+        self.play(
+            *mask_actions,
+            run_time=1.5
+        ) # finishes at 81.5s
+
+        # Wait until 1:33s (93.0 - 81.5 = 11.5)
+        self.wait(11.5)
+
+        # 1:33s: Loss formula appears
+        self.play(
+            Write(loss_formula),
+            run_time=1.5
+        ) # finishes at 94.5s
+
+        # Wait until end of audio (117.68s)
+        self.wait(23.18)
+
+
+# class Section23SpatiotemporalTransformer(Scene):
+#     def construct(self):
+#         title = Tex(r"\text{\textbf{Spatiotemporal (ST) Transformer Block}}", color=WHITE).to_edge(UP).scale(1.2)
+#         self.play(Write(title))
+#         self.wait(2.0)
+
+#         # Main block representing the ST-Transformer block
+#         st_block = RoundedRectangle(width=8.0, height=4.2, color=BLUE_D, stroke_width=2, fill_opacity=0.03).shift(DOWN * 0.4)
+#         st_title = Tex(r"\text{\textbf{ST-Transformer Block}}", color=BLUE_D).next_to(st_block, UP, aligned_edge=LEFT, buff=0.1).scale(0.8)
+
+#         self.play(Create(st_block), Write(st_title))
+#         self.wait(1.5)
+
+#         # Inner layers
+#         spatial_box = RoundedRectangle(width=6.2, height=0.9, color=BLUE_B, fill_opacity=0.1).shift(UP * 0.9 + DOWN * 0.4)
+#         spatial_label = Tex(r"\text{\textbf{Spatial Attention Layer}} \\ \text{Attends over: } $1 \times H \times W$ \text{ tokens}", color=WHITE)
+#         fit_in_box(spatial_label, spatial_box)
+#         spatial_math = MathTex(r"O(H \times W)", color=BLUE_A).next_to(spatial_box, RIGHT, buff=0.15).scale(0.8)
+
+#         temporal_box = RoundedRectangle(width=6.2, height=0.9, color=ORANGE, fill_opacity=0.1).shift(DOWN * 0.4)
+#         temporal_label = Tex(r"\text{\textbf{Temporal Attention Layer}} \\ \text{Attends over: } $T \times 1 \times 1$ \text{ tokens}", color=WHITE)
+#         fit_in_box(temporal_label, temporal_box)
+#         temporal_math = MathTex(r"O(T)", color=ORANGE).next_to(temporal_box, RIGHT, buff=0.15).scale(0.8)
+
+#         ffw_box = RoundedRectangle(width=6.2, height=0.9, color=GREEN, fill_opacity=0.1).shift(DOWN * 1.5)
+#         ffw_label = Tex(r"\text{\textbf{Feed-Forward Network (FFW) Layer}}", color=WHITE)
+#         fit_in_box(ffw_label, ffw_box)
+#         ffw_desc = Tex(r"\text{Omitted post-spatial FFW to optimize and enable massive scaling}", color=GREEN).next_to(ffw_box, DOWN, buff=0.15).scale(0.7)
+
+#         # Arrows showing execution flow
+#         arrow1 = Arrow(start=spatial_box.get_bottom(), end=temporal_box.get_top(), color=GRAY, buff=0.05)
+#         arrow2 = Arrow(start=temporal_box.get_bottom(), end=ffw_box.get_top(), color=GRAY, buff=0.05)
+
+#         self.play(Create(spatial_box), Write(spatial_label), Write(spatial_math))
+#         self.wait(2.0)
+#         self.play(Create(arrow1), Create(temporal_box), Write(temporal_label), Write(temporal_math))
+#         self.wait(2.0)
         
-        self.play(Create(loop_arrow), Write(loop_label))
-        self.wait(15.0)
+#         # Causal Mask annotation on Temporal layer
+#         mask_grid = VGroup(*[
+#             Square(side_length=0.14, stroke_color=GRAY, fill_opacity=0.1)
+#             for _ in range(16)
+#         ]).arrange_in_grid(4, 4, buff=0.02).next_to(temporal_box, LEFT, buff=0.25)
+        
+#         # Mask the upper triangular part (causal mask)
+#         for i in range(4):
+#             for j in range(i+1, 4):
+#                 mask_grid[i*4 + j].set_fill(RED, opacity=0.85).set_color(RED)
+        
+#         mask_label = Tex(r"\text{Causal Mask}", color=RED).next_to(mask_grid, DOWN, buff=0.05).scale(0.65)
+#         self.play(Create(mask_grid), Write(mask_label))
+#         self.wait(3.0)
+
+#         self.play(Create(arrow2), Create(ffw_box), Write(ffw_label), Write(ffw_desc))
+#         self.wait(15.0)
+
+
+# class Section24InferenceCycle(Scene):
+#     def construct(self):
+#         title = Tex(r"\text{\textbf{Autoregressive Inference Cycle}}", color=WHITE).to_edge(UP).scale(1.2)
+#         self.play(Write(title))
+#         self.wait(2.0)
+
+#         # Input Frame x_1
+#         frame_in = Rectangle(width=1.5, height=1.0, color=BLUE, fill_opacity=0.25).shift(LEFT * 5.0 + UP * 0.5)
+#         label_in = Tex(r"\text{Prompt Frame } $x_1$", color=BLUE).next_to(frame_in, DOWN, buff=0.1).scale(0.7)
+
+#         # Video Tokenizer Encoder
+#         enc_box = RoundedRectangle(width=2.2, height=1.1, color=BLUE, corner_radius=0.1).shift(LEFT * 2.2 + UP * 0.5)
+#         enc_label = Tex(r"\text{\textbf{Tokenizer}} \\ \text{Encoder}", color=BLUE)
+#         fit_in_box(enc_label, enc_box)
+
+#         # Dynamics Model
+#         dyn_box = RoundedRectangle(width=2.5, height=1.5, color=RED, corner_radius=0.1).shift(RIGHT * 1.0 + UP * 0.5)
+#         dyn_label = Tex(r"\text{\textbf{Dynamics Model}} \\ \text{Predict next token}", color=RED)
+#         fit_in_box(dyn_label, dyn_box)
+
+#         # Decoder
+#         dec_box = RoundedRectangle(width=2.2, height=1.1, color=BLUE, corner_radius=0.1).shift(RIGHT * 4.4 + UP * 0.5)
+#         dec_label = Tex(r"\text{\textbf{Tokenizer}} \\ \text{Decoder}", color=BLUE)
+#         fit_in_box(dec_label, dec_box)
+
+#         # Controller Button
+#         button_circle = Circle(radius=0.35, color=ORANGE, fill_color=ORANGE, fill_opacity=0.3).shift(RIGHT * 1.0 + DOWN * 1.5)
+#         button_label = Tex(r"\text{\textbf{User Action }} $a_t$ \\ \text{(8-Button Controller)}", color=ORANGE).next_to(button_circle, LEFT, buff=0.25).scale(0.7)
+
+#         # Output predicted x_hat_2
+#         frame_out = Rectangle(width=1.5, height=1.0, color=GREEN, fill_opacity=0.25).shift(RIGHT * 5.2 + DOWN * 1.5)
+#         label_out = Tex(r"\text{Output Frame } $\hat{x}_2$", color=GREEN).next_to(frame_out, DOWN, buff=0.1).scale(0.7)
+
+#         # Arrows
+#         arrow1 = Arrow(start=frame_in.get_right(), end=enc_box.get_left(), color=GRAY)
+#         arrow2 = Arrow(start=enc_box.get_right(), end=dyn_box.get_left(), color=BLUE)
+#         arrow3 = Arrow(start=dyn_box.get_right(), end=dec_box.get_left(), color=RED)
+#         arrow4 = Arrow(start=dec_box.get_bottom(), end=frame_out.get_top(), color=GREEN)
+#         arrow_act = Arrow(start=button_circle.get_top(), end=dyn_box.get_bottom(), color=ORANGE)
+
+#         # Auto-regressive loop arrow
+#         loop_arrow = Arrow(
+#             start=frame_out.get_left(), 
+#             end=frame_in.get_bottom(), 
+#             path_arc=0.7, 
+#             color=GOLD
+#         )
+#         loop_label = Tex(r"\text{\textbf{Autoregressive Loop}}", color=GOLD).next_to(loop_arrow, DOWN, buff=0.1).scale(0.75)
+
+#         self.play(Create(frame_in), Write(label_in))
+#         self.play(Create(arrow1), Create(enc_box), Write(enc_label))
+#         self.wait(1.0)
+#         self.play(Create(arrow2), Create(dyn_box), Write(dyn_label))
+#         self.wait(1.0)
+#         self.play(Create(arrow_act), Create(button_circle), Write(button_label))
+#         self.wait(1.5)
+
+#         # Highlight action press & loop flow
+#         self.play(button_circle.animate.set_fill(ORANGE, opacity=0.85))
+#         self.play(Create(arrow3), Create(dec_box), Write(dec_label))
+#         self.play(Create(arrow4), Create(frame_out), Write(label_out))
+#         self.wait(1.5)
+        
+#         self.play(Create(loop_arrow), Write(loop_label))
+#         self.wait(15.0)
 
 
 class Section3ScalingResults(Scene):
     def construct(self):
-        title = Tex(r"\text{\textbf{Scaling Results \& Compute Power}}", color=WHITE).to_edge(UP).scale(1.2)
-        self.play(Write(title))
-        self.wait(2.0)
+        # Add audio
+        self.add_sound(os.path.join(os.path.dirname(__file__), "assets", "Genie_Scale_Results.wav"))
 
-        # Recreate the 3-panel data visualization from Figure 9
-        charts_group = VGroup()
+        title = Tex(r"\text{\textbf{Scaling Results}", color=WHITE).to_edge(UP, buff=1.0).scale(1.2)
 
-        # Chart 1: Scaling Model Size
-        ax1 = Axes(
-            x_range=[0, 4, 1], y_range=[0, 3, 1],
-            x_length=3.2, y_length=2.2,
-            axis_config={"color": GRAY, "include_numbers": False}
-        )
-        ax1_title = Tex(r"\text{Loss vs Compute}", color=WHITE).next_to(ax1, UP, buff=0.1).scale(0.75)
-        ax1_xlabel = Tex(r"\text{Compute (FLOPs)}", color=GRAY).next_to(ax1, DOWN, buff=0.08).scale(0.65)
-        
-        curve1 = ax1.plot(lambda x: 2.3 * np.exp(-0.75 * x) + 0.45, x_range=[0, 3.8], color=BLUE)
-        chart1 = VGroup(ax1, ax1_title, ax1_xlabel, curve1)
+        # Image Scaling_Results.png
+        img = ImageMobject("scenes/part_2_world_models/assets/Scaling_Results.png").scale_to_fit_width(11.5).shift(UP * 0.3)
 
-        # Chart 2: Final Loss vs Model Size (41M to 2.7B)
-        ax2 = Axes(
-            x_range=[0, 4, 1], y_range=[0, 3, 1],
-            x_length=3.2, y_length=2.2,
-            axis_config={"color": GRAY, "include_numbers": False}
-        )
-        ax2_title = Tex(r"\text{Loss vs Parameters}", color=WHITE).next_to(ax2, UP, buff=0.1).scale(0.75)
-        ax2_xlabel = Tex(r"\text{Parameters (41M to 2.7B)}", color=GRAY).next_to(ax2, DOWN, buff=0.08).scale(0.65)
-        
-        dots = VGroup(*[
-            Dot(ax2.c2p(x, y), color=RED, radius=0.08)
-            for x, y in [(0.8, 2.45), (1.8, 1.65), (2.8, 1.05), (3.6, 0.55)]
-        ])
-        chart2 = VGroup(ax2, ax2_title, ax2_xlabel, dots)
+        # Highlight box for the charts
+        highlight_box = Rectangle(
+            width=3.7, height=2.4, 
+            color=YELLOW, stroke_width=3
+        ).move_to([-3.55, 0.3, 0])
 
-        # Chart 3: Batch Size Scaling
-        ax3 = Axes(
-            x_range=[0, 4, 1], y_range=[0, 3, 1],
-            x_length=3.2, y_length=2.2,
-            axis_config={"color": GRAY, "include_numbers": False}
-        )
-        ax3_title = Tex(r"\text{Batch Size Scaling}", color=WHITE).next_to(ax3, UP, buff=0.1).scale(0.75)
-        ax3_xlabel = Tex(r"\text{Training Steps}", color=GRAY).next_to(ax3, DOWN, buff=0.08).scale(0.65)
-        
-        curve3_128 = ax3.plot(lambda x: 2.2 * np.exp(-0.4 * x) + 0.6, x_range=[0, 3.8], color=GRAY)
-        curve3_448 = ax3.plot(lambda x: 1.8 * np.exp(-0.6 * x) + 0.3, x_range=[0, 3.8], color=GREEN)
-        
-        label_128 = Tex(r"\text{Batch 128}", color=GRAY).next_to(curve3_128, RIGHT, buff=0.01).scale(0.55)
-        label_448 = Tex(r"\text{Batch 448}", color=GREEN).next_to(curve3_448, RIGHT, buff=0.01).scale(0.55)
-        
-        chart3 = VGroup(ax3, ax3_title, ax3_xlabel, curve3_128, curve3_448, label_128, label_448)
-
-        charts_group.add(chart1, chart2, chart3).arrange(RIGHT, buff=0.8).shift(UP * 0.2)
-
-        # Summary / Conclusion Box
-        summary_box = RoundedRectangle(width=10.5, height=1.3, color=GOLD, stroke_width=2, fill_opacity=0.05).shift(DOWN * 2.3)
+        # Summary text with colored keywords below the image
         summary_text = Tex(
-            r"\text{\textbf{Largest Configuration: 10.7B Parameters}} \\ \text{Trained on 942B Tokens using 256 TPUv5p Chips}", 
-            color=GOLD
-        )
-        fit_in_box(summary_text, summary_box)
+            r"\text{Genie Model: }", r"\text{\textbf{10.7B parameters}}", 
+            r"\text{, trained on }", r"\text{\textbf{942B tokens}}", 
+            r"\text{, using }", r"\text{\textbf{256 TPUv5p}}"
+        ).scale(0.85).shift(DOWN * 2.3)
+        
+        # Color the keywords
+        summary_text[1].set_color(ORANGE)
+        summary_text[3].set_color(GREEN)
+        summary_text[5].set_color(BLUE)
 
-        # Sequential layout
-        self.play(Create(chart1))
-        self.wait(1.5)
-        self.play(Create(chart2))
-        self.wait(1.5)
-        self.play(Create(chart3))
-        self.wait(2.0)
-        self.play(Create(summary_box), Write(summary_text))
-        self.wait(15.0)
+        # ==========================================
+        # ANIMATION TIMELINE
+        # ==========================================
+        # 0s -> wait 5.0s
+        self.wait(5.0)
+
+        # 5s: Title appears
+        self.play(Write(title), run_time=1.5) # finishes at 6.5s
+
+        # Wait until 10s (10.0 - 6.5 = 3.5)
+        self.wait(3.5)
+
+        # 10s: Image appears
+        self.play(FadeIn(img), run_time=1.5) # finishes at 11.5s
+
+        # Wait until 15s (15.0 - 11.5 = 3.5)
+        self.wait(3.5)
+
+        # 15s: Highlight box appears over first chart (left)
+        self.play(Create(highlight_box), run_time=1.0) # finishes at 16.0s
+
+        # Wait until 23s (23.0 - 16.0 = 7.0)
+        self.wait(7.0)
+
+        # 23s: Highlight box moves to middle chart
+        self.play(highlight_box.animate.move_to([0.1, 0.3, 0]), run_time=1.0) # finishes at 24.0s
+
+        # Wait until 40s (40.0 - 24.0 = 16.0)
+        self.wait(16.0)
+
+        # 40s: Highlight box moves to right chart
+        self.play(highlight_box.animate.move_to([3.75, 0.3, 0]), run_time=1.0) # finishes at 41.0s
+
+        # Wait until 52s (52.0 - 41.0 = 11.0)
+        self.wait(11.0)
+
+        # 52s: Highlight box disappears
+        self.play(FadeOut(highlight_box), run_time=1.0) # finishes at 53.0s
+
+        # 53s: Summary text appears
+        self.play(Write(summary_text), run_time=2.0) # finishes at 55.0s
+
+        # Wait until the end of audio (69.92s)
+        self.wait(14.92)
+
 
 
 class Section4QualitativeEmergent(Scene):
     def construct(self):
-        title = Tex(r"\text{\textbf{Emergent Capabilities \& Qualitative Results}}", color=WHITE).to_edge(UP).scale(1.2)
-        self.play(Write(title))
-        self.wait(2.0)
+        # Add audio
+        self.add_sound(os.path.join(os.path.dirname(__file__), "assets", "Genie_Qualitative_Results.wav"))
 
-        # 1. Platformers Model (OOD Generalization) grid representation
-        grid_title = Tex(r"\text{\textbf{Out-of-Distribution Generalization (Platformers)}}", color=BLUE).shift(LEFT * 4.2 + UP * 2.0).scale(0.7)
-        
-        grid_rows = VGroup()
-        row_labels = [r"\text{Text-to-Image}", r"\text{Hand-drawn Sketch}", r"\text{Real Photo}"]
-        
-        for i in range(3):
-            row_group = VGroup()
-            lbl = Tex(row_labels[i], color=GRAY_A)
-            row_group.add(lbl)
-            
-            frames = VGroup(*[
-                Rectangle(width=0.8, height=0.5, stroke_color=BLUE_D, stroke_width=1, fill_color=BLUE_E, fill_opacity=0.1)
-                for _ in range(4)
-            ]).arrange(RIGHT, buff=0.08)
-            
-            row_group.add(frames)
-            row_group.arrange(RIGHT, buff=0.25)
-            grid_rows.add(row_group)
-            
-        grid_rows.arrange(DOWN, buff=0.2).shift(LEFT * 4.2 + DOWN * 0.4).scale(0.75)
-        
-        self.play(Write(grid_title), Create(grid_rows))
-        
-        # Animate character movement dots across the columns
-        dots = VGroup()
-        for idx, row in enumerate(grid_rows):
-            start_pos = row[1][0].get_center() + LEFT * 0.2
-            dot = Dot(point=start_pos, color=RED, radius=0.06)
-            dots.add(dot)
-            
-        self.play(Create(dots))
-        
-        # Animate dots concurrently moving and jumping across columns
-        move_actions = []
-        for i, dot in enumerate(dots):
-            p1 = grid_rows[i][1][1].get_center()
-            p2 = grid_rows[i][1][2].get_center() + (UP * 0.3 if i == 1 else DOWN * 0.1 if i == 2 else ORIGIN)
-            p3 = grid_rows[i][1][3].get_center()
-            
-            path = Succession(
-                dot.animate.move_to(p1),
-                dot.animate.move_to(p2),
-                dot.animate.move_to(p3),
-                run_time=3.0
-            )
-            move_actions.append(path)
-            
-        self.play(*move_actions)
+        title = Tex(r"\text{\textbf{Qualitative Results}}", color=WHITE).to_edge(UP, buff=0.8).scale(1.2)
+
+        # Load images
+        img1 = ImageMobject("scenes/part_2_world_models/assets/Genie_Qualitative_Results.png").scale_to_fit_width(11.5).shift(DOWN * 0.5)
+        img2 = ImageMobject("scenes/part_2_world_models/assets/Genie_Qualitative_Results_2.png").scale_to_fit_width(13.0).shift(DOWN * 0.4)
+
+        # ==========================================
+        # ANIMATION TIMELINE
+        # ==========================================
+        # 0s -> wait 3.0s
         self.wait(3.0)
 
-        # Transition to Emergent Parallax
-        self.play(FadeOut(grid_rows), FadeOut(grid_title), FadeOut(dots))
-        
-        parallax_title = Tex(r"\text{\textbf{Emergent Parallax Effect}}", color=ORANGE).shift(RIGHT * 1.8 + UP * 2.0).scale(0.8)
-        
-        scene_base = Line(start=[0.5, -0.6, 0], end=[4.5, -0.6, 0], color=GRAY_D)
-        road_line = Line(start=[0.5, -1.6, 0], end=[4.5, -1.6, 0], color=GRAY_B)
-        mountain_line = Line(start=[0.5, 0.4, 0], end=[4.5, 0.4, 0], color=GRAY_E)
-        
-        fg_arrow = Arrow(start=[1.0, -1.2, 0], end=[3.8, -1.2, 0], color=GREEN, buff=0)
-        fg_lbl = Tex(r"\text{Foreground: Fast movement}", color=GREEN).next_to(fg_arrow, UP, buff=0.05).scale(0.6)
-        
-        mg_arrow = Arrow(start=[1.0, -0.3, 0], end=[2.4, -0.3, 0], color=ORANGE, buff=0)
-        mg_lbl = Tex(r"\text{Middleground: Medium movement}", color=ORANGE).next_to(mg_arrow, UP, buff=0.05).scale(0.6)
-        
-        bg_arrow = Arrow(start=[1.0, 0.7, 0], end=[1.5, 0.7, 0], color=RED, buff=0)
-        bg_lbl = Tex(r"\text{Background: Slow movement}", color=RED).next_to(bg_arrow, UP, buff=0.05).scale(0.6)
-        
-        parallax_group = VGroup(scene_base, road_line, mountain_line, fg_arrow, fg_lbl, mg_arrow, mg_lbl, bg_arrow, bg_lbl).shift(RIGHT * 1.5)
-        
-        self.play(Write(parallax_title), Create(parallax_group))
-        self.wait(5.0)
+        # 3s: Title appears
+        self.play(Write(title), run_time=1.5) # finishes at 4.5s
 
-        # Transition to Robotics & Deformable Physics
-        self.play(FadeOut(parallax_group), FadeOut(parallax_title))
-        
-        robot_title = Tex(r"\text{\textbf{Robotics: Deformable Physics Simulation}}", color=RED).shift(RIGHT * 1.8 + UP * 2.0).scale(0.8)
-        
-        table = Line(start=[0.2, -1.8, 0], end=[4.8, -1.8, 0], color=GRAY)
-        
-        chips_bag = RoundedRectangle(width=1.4, height=1.0, corner_radius=0.15, color=GOLD, fill_color=GOLD_E, fill_opacity=0.4).shift(RIGHT * 2.5 + DOWN * 1.3)
-        bag_label = Tex(r"\text{Chips Bag}", color=GOLD)
-        fit_in_box(bag_label, chips_bag)
-        
-        arm_base = Dot(point=[2.5, 1.2, 0], color=GRAY, radius=0.12)
-        joint = Dot(point=[2.0, 0.2, 0], color=GRAY, radius=0.08)
-        gripper = Rectangle(width=0.6, height=0.2, color=WHITE).shift(RIGHT * 2.5 + UP * 0.4)
-        
-        arm_link1 = Line(start=arm_base.get_center(), end=joint.get_center(), color=GRAY_A, stroke_width=4)
-        arm_link2 = Line(start=joint.get_center(), end=gripper.get_top(), color=GRAY_A, stroke_width=4)
-        
-        robot_arm = VGroup(arm_base, joint, gripper, arm_link1, arm_link2)
-        
-        self.play(Write(robot_title), Create(table), Create(chips_bag), Write(bag_label), Create(robot_arm))
-        self.wait(2.0)
-        
-        # Compress animation
-        target_joint_pos = np.array([2.2, -0.4, 0])
-        target_gripper_pos = np.array([2.5, -0.8, 0])
-        
-        compress_arm_link1 = Line(start=arm_base.get_center(), end=target_joint_pos, color=GRAY_A, stroke_width=4)
-        compress_arm_link2 = Line(start=target_joint_pos, end=target_gripper_pos + UP * 0.1, color=GRAY_A, stroke_width=4)
-        
-        self.play(
-            joint.animate.move_to(target_joint_pos),
-            gripper.animate.move_to(target_gripper_pos + UP * 0.1),
-            Transform(arm_link1, compress_arm_link1),
-            Transform(arm_link2, compress_arm_link2),
-            chips_bag.animate.stretch_to_fit_height(0.4).shift(DOWN * 0.3),
-            bag_label.animate.scale(0.8).shift(DOWN * 0.3),
-            run_time=3.0
-        )
-        self.wait(15.0)
+        # Wait until 11s (11.0 - 4.5 = 6.5)
+        self.wait(6.5)
+
+        # 11s: Image 1 appears
+        self.play(FadeIn(img1), run_time=1.5) # finishes at 12.5s
+
+        # Wait until 31s (31.0 - 12.5 = 18.5)
+        self.wait(18.5)
+
+        # 31s: Image 1 disappears and Image 2 appears
+        self.play(FadeOut(img1), FadeIn(img2), run_time=1.5) # finishes at 32.5s
+
+        # Wait until the end of audio (55.32s)
+        self.wait(22.82)
