@@ -1,0 +1,62 @@
+# ==========================================
+# 1. MANIM OUTPUTS & CACHE (Đầu ra chuyên biệt của Manim)
+# ==========================================
+# Tránh commit toàn bộ video, ảnh và dữ liệu cache phát sinh trong quá trình render
+
+# Thư mục chứa toàn bộ sản phẩm video/hình ảnh xuất ra (mặc định của Manim)
+media/
+videos/
+images/
+
+# Thư mục cache lưu trữ các trạng thái animation để tăng tốc render lần sau
+__pycache__/
+media/videos/**/cache/
+.manim_cache/
+
+# Các tệp cấu hình cục bộ của Manim nếu bạn tùy chỉnh riêng cho máy mình
+.manim.cfg
+
+# ==========================================
+# 2. LATEX & TEXT RENDER ARTIFACTS (File tạm từ LaTeX)
+# ==========================================
+# Khi Manim gọi LaTeX để render công thức toán qua MathTex, rất nhiều file tạm sẽ sinh ra
+*.dvi
+*.pdf
+*.svg
+*.aux
+*.log
+*.toc
+*.out
+*.idx
+*.ilg
+*.ind
+*.blg
+*.bbl
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+
+# ==========================================
+# 3. PYTHON COMPILED FILES (File biên dịch Python)
+# ==========================================
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# ==========================================
+# 4. VIRTUAL ENVIRONMENTS (Môi trường ảo)
+# ==========================================
+# Loại bỏ thư mục chứa thư viện đã cài đặt (Conda hoặc Pipenv/Venv)
+venv/
+.venv/
+env/
+.conda/
+
+# ==========================================
+# 5. IDEs & SYSTEM FILES (Cấu hình IDE & Hệ điều hành)
+# ==========================================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
