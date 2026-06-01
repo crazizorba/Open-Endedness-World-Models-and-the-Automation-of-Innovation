@@ -6,12 +6,24 @@ import os
 # I. FOUNDATION CONFIG & UTILITY FUNCTIONS
 # =========================================================================
 
+# Cấu hình XeLaTeX làm bộ dịch mặc định cho LaTeX để hỗ trợ tiếng Việt
+my_template = TexTemplate(tex_compiler="xelatex", output_format=".xdv")
+my_template.add_to_preamble(r"\usepackage{xcolor}")
+my_template.add_to_preamble(r"\usepackage{amsmath}")
+config.tex_template = my_template
+
+
 class VietnameseScene(Scene):
-    pass
+    def setup(self):
+        config.tex_template = my_template
+        super().setup()
 
 
 class VietnameseMovingCameraScene(MovingCameraScene):
-    pass
+    def setup(self):
+        config.tex_template = my_template
+        super().setup()
+
 
 
 def fit_in_box(mobject, box, padding=0.15):
