@@ -2,34 +2,68 @@ from manim import *
 import numpy as np
 import os
 
-# =========================================================================
-# I. FOUNDATION CONFIG & UTILITY FUNCTIONS
-# =========================================================================
+# Set default TexTemplate to support Vietnamese using XeLaTeX
+vietnamese_template = TexTemplate(tex_compiler="xelatex", output_format=".xdv")
+vietnamese_template.add_to_preamble(r"\usepackage{xcolor}")
+vietnamese_template.add_to_preamble(r"\usepackage{amsmath}")
+config.tex_template = vietnamese_template
 
-# Cấu hình XeLaTeX làm bộ dịch mặc định cho LaTeX để hỗ trợ tiếng Việt
-my_template = TexTemplate(tex_compiler="xelatex", output_format=".xdv")
-my_template.add_to_preamble(r"\usepackage{xcolor}")
-my_template.add_to_preamble(r"\usepackage{amsmath}")
-config.tex_template = my_template
+# Color palette (3Blue1Brown & Genie-consistent style)
+GOLD = "#F0AC5F"
+GOLD_E = "#9B6A2F"
+BLUE_C = "#58C4DD"
+BLUE_E = "#1C758A"
+GREEN_C = "#83C167"
+GREEN_E = "#416832"
+ORANGE = "#FF862F"
+RED = "#FC6255"
+RED_E = "#94231E"
+GRAY_A = "#C8C8C8"
+GRAY_E = "#222222"
 
+# Layout Constants
+SCREEN_WIDTH = 14.0
+SCREEN_HEIGHT = 8.0
+SAFE_PADDING = 0.25
+COL3_LEFT = -4.5
+COL3_CENTER = 0.0
+COL3_RIGHT = 4.5
+ROW_Y_TOP = 1.8
+ROW_Y_MID = 0.0
+ROW_Y_BOT = -1.8
+
+
+# =========================================================================
+# BASE SCENE CLASSES
+# =========================================================================
 
 class VietnameseScene(Scene):
+    """
+    Base Scene class optimized for Vietnamese text.
+    Uses XeLaTeX and default pure black background.
+    """
     def setup(self):
-        config.tex_template = my_template
+        config.tex_template = vietnamese_template
         super().setup()
 
 
 class VietnameseMovingCameraScene(MovingCameraScene):
+    """
+    Base MovingCameraScene class optimized for Vietnamese text.
+    Supports camera zooming and panning.
+    """
     def setup(self):
-        config.tex_template = my_template
+        config.tex_template = vietnamese_template
         super().setup()
 
 
+# =========================================================================
+# HELPER FUNCTIONS
+# =========================================================================
 
 def fit_in_box(mobject, box, padding=0.15):
     """
-    Fits any mobject nicely inside a container box, scaling it down if necessary
-    and centering it, to prevent screen overflow.
+    Helper function to scale and move any mobject to fit within a bounding box.
     """
     max_w = box.width - 2 * padding
     max_h = box.height - 2 * padding
@@ -44,395 +78,815 @@ def fit_in_box(mobject, box, padding=0.15):
 
 def load_safe_sound(scene, filename):
     """
-    Safely adds a sound file if it exists, warning instead of crashing if missing.
+    Loads sound from local assets directory safely without failing compilation if missing.
     """
-    audio_path = os.path.join(os.path.dirname(__file__), "assets", filename)
+    audio_path = os.path.join(os.path.dirname(__file__), "assets", "audio", filename)
     if os.path.exists(audio_path):
         scene.add_sound(audio_path)
     else:
-        print(f"[WARNING] Audio file not found at {audio_path}. Continuing without sound.")
+        print(f"WARNING: Audio file not found at: {audio_path}")
+
+
+def create_title_banner(title_text, color=GOLD):
+    """
+    Creates a standardized title banner with an underline separator.
+    """
+    title = Tex(rf"\text{{\textbf{{{title_text}}}}}", color=color).scale(0.9)
+    underline = Line(start=LEFT * 6.5, end=RIGHT * 6.5, color=GRAY, stroke_width=1.5)
+    banner = VGroup(title, underline).arrange(DOWN, buff=0.15).to_edge(UP, buff=0.5)
+    return banner
+
+
+def create_concept_card(title, content_list, border_color=BLUE_C, width=4.0, height=3.0):
+    """
+    Creates a card with a colored border, title, and bullet-pointed items.
+    """
+    box = RoundedRectangle(width=width, height=height, color=border_color, fill_color=BLACK, fill_opacity=0.8, corner_radius=0.15)
+    card_title = Tex(rf"\text{{\textbf{{{title}}}}}", color=border_color).scale(0.85)
+    card_title.next_to(box.get_top(), DOWN, buff=0.25)
+    
+    bullets = VGroup(*[
+        Tex(rf"\bullet\ \text{{{item}}}", color=WHITE).scale(0.7)
+        for item in content_list
+    ]).arrange(DOWN, aligned_edge=LEFT, buff=0.2).next_to(card_title, DOWN, buff=0.3)
+    
+    card = VGroup(box, card_title, bullets)
+    return card
+
+
+def create_section_transition(scene, title_text, duration=2.0):
+    """
+    Fades in a large transition title in the center, waits, then fades it out.
+    """
+    transition_title = Tex(rf"\text{{\textbf{{{title_text}}}}}", color=GOLD).scale(1.2)
+    scene.play(FadeIn(transition_title, shift=UP * 0.3), run_time=1.0)
+    scene.wait(duration)
+    scene.play(FadeOut(transition_title), run_time=1.0)
+
+
+def create_comparison_table(headers, rows, col_widths=None, row_heights=None):
+    """
+    Creates a comparison grid table structure for display.
+    """
+    table = VGroup()
+    num_cols = len(headers)
+    num_rows = len(rows)
+    
+    cols = VGroup()
+    for col_idx in range(num_cols):
+        col_v = VGroup()
+        hdr = Tex(headers[col_idx], color=GOLD).scale(0.8)
+        col_v.add(hdr)
+        for row_idx in range(num_rows):
+            cell = Tex(rows[row_idx][col_idx], color=WHITE).scale(0.7)
+            col_v.add(cell)
+        col_v.arrange(DOWN, buff=0.4)
+        cols.add(col_v)
+    cols.arrange(RIGHT, buff=0.8)
+    table.add(cols)
+    return table
 
 
 # =========================================================================
-# II. SCENE IMPLEMENTATIONS
+# CUSTOM MOBJECTS
 # =========================================================================
 
-class Phase1PetriDishVsClosedSystem(VietnameseScene):
+class PetriDish(VGroup):
+    """
+    Visualizes Lisa Simpson's evolutionary Petri dish (SC_02).
+    """
+    def __init__(self, radius=2.5, **kwargs):
+        super().__init__(**kwargs)
+        self.dish_border = Circle(radius=radius, color=GRAY_A, stroke_width=2, stroke_style=DASHED)
+        self.tooth_center = Square(side_length=0.6, color=WHITE, fill_color=WHITE, fill_opacity=0.2)
+        
+        # Red particles representing cola/nutrients
+        self.particles = VGroup(*[
+            Dot(point=np.array([np.random.uniform(-1.5, 1.5), np.random.uniform(-1.5, 1.5), 0.0]), radius=0.04, color=RED)
+            for _ in range(20)
+        ])
+        self.add(self.dish_border, self.tooth_center, self.particles)
+
+    def mutate_cells(self):
+        """Animates tooth mutating into biological cell structures."""
+        pass
+
+    def evolve_to_city(self):
+        """Animates cells transforming into a micro golden city."""
+        pass
+
+
+class InnovationNode(VGroup):
+    """
+    Represents discovery/innovation nodes in an evolutionary search tree (SC_01, SC_03, SC_07).
+    """
+    def __init__(self, label_text, color=BLUE_C, **kwargs):
+        super().__init__(**kwargs)
+        self.core_node = Circle(radius=0.4, color=color, fill_color=BLACK, fill_opacity=1.0)
+        self.label = Tex(rf"\text{{{label_text}}}", color=color).scale(0.6)
+        fit_in_box(self.label, self.core_node)
+        self.child_connections = VGroup()
+        self.add(self.core_node, self.label, self.child_connections)
+
+    def glow_activation(self):
+        """Animates node border pulsing/glowing with GOLD/ORANGE."""
+        pass
+
+
+class ObjectiveLandscape(VGroup):
+    """
+    Visualizes objective function contours and local minima entrapment (SC_04, SC_06).
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.contours = VGroup(*[
+            Annulus(inner_radius=r, outer_radius=r+0.05, color=GREEN_E).scale(1 + 0.1 * np.sin(r * PI))
+            for r in np.arange(0.5, 3.0, 0.5)
+        ])
+        self.flag = Tex(r"\text{Goal}", color=GOLD).scale(0.7)
+        self.agent_dot = Dot(color=BLUE_C).shift(LEFT * 2 + DOWN * 1)
+        self.add(self.contours, self.flag, self.agent_dot)
+
+    def simulate_gradient_descent(self):
+        """Animates agent dot sliding down gradient curves into local optima."""
+        pass
+
+
+class ExplorationGraph(VGroup):
+    """
+    Visualizes Stepping Stones and the fog of uncertainty (SC_04).
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.nodes = VGroup(*[
+            RoundedRectangle(width=1.2, height=0.6, color=GRAY_A, fill_color=GRAY_E, fill_opacity=0.9, corner_radius=0.1)
+            for _ in range(5)
+        ])
+        positions = [
+            LEFT * 3 + DOWN * 1.5,
+            LEFT * 1.5 + DOWN * 0.5,
+            ORIGIN + UP * 0.5,
+            RIGHT * 1.5 + DOWN * 0.5,
+            RIGHT * 3 + UP * 1.0
+        ]
+        for node, pos in zip(self.nodes, positions):
+            node.move_to(pos)
+        self.add(self.nodes)
+
+    def reveal_stepping_stone(self, index):
+        """Animates clearing of fog and thumping activation of stepping stone."""
+        pass
+
+
+class NetHackEnvironment(VGroup):
+    """
+    Simulates NetHack logic grid and magnifying lens interpretation (SC_05).
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        grid_data = [
+            ["#", "#", "#", "#", "#", "#", "#", "#"],
+            ["#", ".", ".", ".", ".", ".", ".", "#"],
+            ["#", ".", "@", ".", ".", "d", ".", "#"],
+            ["#", ".", ".", ".", ".", ".", "D", "#"],
+            ["#", "#", "#", "#", "#", "#", "#", "#"]
+        ]
+        self.ascii_grid = VGroup()
+        for r_idx, row in enumerate(grid_data):
+            row_grp = VGroup()
+            for c_idx, val in enumerate(row):
+                color = BLUE_C if val == "@" else (ORANGE if val in ["d", "D"] else GRAY_A)
+                char_tex = Tex(rf"\texttt{{{val}}}", color=color).scale(0.85)
+                char_tex.shift(RIGHT * c_idx * 0.5 + DOWN * r_idx * 0.5)
+                row_grp.add(char_tex)
+            self.ascii_grid.add(row_grp)
+        self.ascii_grid.move_to(ORIGIN)
+        
+        self.lens = Circle(radius=0.8, color=GOLD, stroke_width=3)
+        self.lens_handle = Line(start=self.lens.get_bottom(), end=self.lens.get_bottom() + DOWN * 0.5 + RIGHT * 0.5, color=GOLD, stroke_width=3)
+        self.magnifier = VGroup(self.lens, self.lens_handle)
+        self.add(self.ascii_grid, self.magnifier)
+
+    def transform_lens_focus(self):
+        """Transforms ASCII characters underneath magnifier lens into graphical icons."""
+        pass
+
+
+class GoldilocksZoneMeter(VGroup):
+    """
+    Visualizes task difficulty distributions: Easy, Goldilocks, and Hard zones (SC_06, SC_07).
+    """
+    def __init__(self, width=0.8, height=4.0, **kwargs):
+        super().__init__(**kwargs)
+        self.easy_zone = Rectangle(width=width, height=height/3, color=BLUE_E, fill_color=BLUE_E, fill_opacity=0.6)
+        self.goldilocks_zone = Rectangle(width=width, height=height/3, color=GOLD_E, fill_color=GOLD_E, fill_opacity=0.8)
+        self.hard_zone = Rectangle(width=width, height=height/3, color=RED_E, fill_color=RED_E, fill_opacity=0.6)
+        
+        self.easy_zone.shift(DOWN * (height/3))
+        self.goldilocks_zone.move_to(ORIGIN)
+        self.hard_zone.shift(UP * (height/3))
+        
+        self.zones = VGroup(self.easy_zone, self.goldilocks_zone, self.hard_zone)
+        
+        self.easy_lbl = Tex(r"\text{Quá dễ}", color=BLUE_C).scale(0.6).next_to(self.easy_zone, LEFT)
+        self.gold_lbl = Tex(r"\text{Goldilocks}", color=GOLD).scale(0.65).next_to(self.goldilocks_zone, LEFT)
+        self.hard_lbl = Tex(r"\text{Quá khó}", color=RED).scale(0.6).next_to(self.hard_zone, LEFT)
+        self.labels = VGroup(self.easy_lbl, self.gold_lbl, self.hard_lbl)
+        
+        self.pointer = Triangle(color=WHITE, fill_color=WHITE, fill_opacity=1.0).scale(0.12).rotate(-PI/2)
+        self.pointer.next_to(self.easy_zone, RIGHT, buff=0.1)
+        
+        self.add(self.zones, self.labels, self.pointer)
+
+    def update_agent_level(self, new_level):
+        """Updates slider pointer to target level value."""
+        pass
+
+
+# =========================================================================
+# VIDEO SCENE CLASSES (SC_01 to SC_07)
+# =========================================================================
+
+class SC_01_TheHorizonOfAGI(VietnameseScene):
+    """
+    SC_01: The Horizon of AGI & The Paradigm Shift.
+    Focus: Explaining static dataset limits, Silver & Sutton's Era of Experience, Watts' organism-environment transaction.
+    """
     def construct(self):
-        # 1. Load Safe Sound (Voiceover audio sync - 132.28 seconds)
-        load_safe_sound(self, "Phase1_PetriDish_ClosedSystem.wav")
-
-        # =====================================================================
-        # PART 0: CINEMATIC INTRO SEQUENCE (00.00s - 28.00s)
-        # =====================================================================
-        # Technical dark background grid
-        grid = NumberPlane(
-            background_line_style={
-                "stroke_color": GRAY,
-                "stroke_width": 1,
-                "stroke_opacity": 0.08
-            }
-        )
-
-        intro_sub = Text(
-            "KỶ NGUYÊN MỚI CỦA TRÍ TUỆ NHÂN TẠO",
-            color=GOLD,
-            font_size=18,
-            weight=BOLD
-        ).to_edge(UP, buff=1.8)
-
-        intro_title = Text(
-            "OPEN-ENDEDNESS",
-            color=WHITE,
-            font_size=46,
-            weight=BOLD
-        ).move_to(ORIGIN)
-
-        intro_desc = Text(
-            "Hành trình vượt ra ngoài giới hạn bế tắc của các Hệ thống Đóng",
-            color=GRAY_A,
-            font_size=16
-        ).next_to(intro_title, DOWN, buff=0.5)
-
-        # Draw intro elements
-        self.play(Create(grid), run_time=1.5)
-        self.play(FadeIn(intro_sub, shift=UP), run_time=1.5)
-        self.play(Write(intro_title), run_time=2.0)
-        self.play(FadeIn(intro_desc, shift=DOWN), run_time=1.5)
-        self.wait(19.0) # Matches first 3 segments ending at 27.26s
-
-        # Clean intro sequence
-        self.play(
-            FadeOut(grid),
-            FadeOut(intro_sub),
-            FadeOut(intro_title),
-            FadeOut(intro_desc),
-            run_time=2.0
-        )
+        load_safe_sound(self, "SC_01_ParadigmShift.wav")
+        title = create_title_banner(r"SC\_01: The Horizon of AGI \& The Paradigm Shift")
+        self.play(FadeIn(title), run_time=1.0)
         self.wait(0.5)
 
-        # =====================================================================
-        # PART 1: LISA SIMPSON'S PETRI DISH (28.00s - 68.00s [Duration: 40s])
-        # =====================================================================
-        title_lisa = Text(
-            "Đĩa Petri của Lisa Simpson (The Genesis Tub)", 
-            color=BLUE_B,
-            weight=BOLD
-        ).scale(0.7).to_edge(UP, buff=0.8)
+        # =========================================================================
+        # PHASE 1: DATA SATURATION CHALLENGE (0.0s - 30.0s)
+        # =========================================================================
+        # Setup static dataset cubes & network model representations
+        dataset_box = RoundedRectangle(width=3.5, height=2.2, color=BLUE_E, fill_color=BLUE_E, fill_opacity=0.1).shift(LEFT * 3.5)
+        dataset_lbl = Tex(r"\text{Dữ liệu tĩnh (Offline Data)}\\$10^{15}$ \text{ tokens}", color=BLUE_C).scale(0.7)
+        fit_in_box(dataset_lbl, dataset_box)
 
-        # Draw a large Petri dish (Circle)
-        circle = Circle(radius=2.5, color=BLUE, stroke_width=3)
-        circle.set_fill(BLUE_E, opacity=0.05)
-
-        # Dynamic Brownian micro-movement physics for living cells
-        def make_vibrating_dot(pos, color, radius=0.08, keep_inside=True):
-            dot = Dot(point=pos, color=color, radius=radius)
-            def jitter(mob, dt):
-                center = circle.get_center()
-                # Random Brownian displacement
-                mob.shift(np.array([
-                    np.random.normal(0, 0.007),
-                    np.random.normal(0, 0.007),
-                    0
-                ]))
-                # Keep inside circle boundary dynamically if constraint is enabled
-                if keep_inside:
-                    curr_radius = circle.width / 2
-                    dist = np.linalg.norm(mob.get_center() - center)
-                    if dist > curr_radius - 0.12:
-                        direction = (mob.get_center() - center) / dist
-                        mob.move_to(center + direction * (curr_radius - 0.18))
-            dot.add_updater(jitter)
-            return dot
-
-        # Dynamic link tracker that follows cells in real time
-        def make_updating_line(dot_a, dot_b, color, opacity):
-            line = Line(start=dot_a.get_center(), end=dot_b.get_center(), color=color, stroke_width=1.5).set_opacity(opacity)
-            def update_line(mob):
-                mob.put_start_and_end_on(dot_a.get_center(), dot_b.get_center())
-            line.add_updater(update_line)
-            return line
-
-        # 28s - 40s: Render Petri dish and initial 4 cells (Segment 4 & 5)
-        dots = VGroup()
-        initial_positions = [
-            np.array([0.4, 0.3, 0]),
-            np.array([-0.5, -0.4, 0]),
-            np.array([-0.2, 0.6, 0]),
-            np.array([0.6, -0.5, 0])
-        ]
-        for pos in initial_positions:
-            dots.add(make_vibrating_dot(pos, BLUE_B))
-
-        self.play(Write(title_lisa), run_time=1.2)
-        self.play(Create(circle), run_time=1.8)
-        self.play(FadeIn(dots, scale=0.5), run_time=1.5)
-        self.wait(7.5) # Reaches 40.00s
-
-        # 40s - 48s: First cell division (Sprout new dots & connect with tracking lines)
-        gen2_positions = [
-            np.array([1.1, 0.7, 0]),
-            np.array([-1.2, -0.8, 0]),
-            np.array([-0.9, 1.1, 0]),
-            np.array([1.3, -1.0, 0]),
-            # Outer points (escaping the boundary)
-            np.array([2.7, 1.0, 0]),
-            np.array([-2.7, -1.2, 0]),
-            np.array([1.6, 2.2, 0]),
-            np.array([-1.0, -2.4, 0])
-        ]
-        
-        gen2_dots = VGroup()
-        gen2_lines = VGroup()
-        for i, pos in enumerate(gen2_positions[:4]):
-            parent_dot = dots[i]
-            dot = make_vibrating_dot(pos, BLUE_A)
-            line = make_updating_line(parent_dot, dot, BLUE_D, 0.45)
-            gen2_dots.add(dot)
-            gen2_lines.add(line)
+        network_box = RoundedRectangle(width=3.5, height=2.2, color=GRAY_A, fill_color=GRAY_E, fill_opacity=0.2).shift(RIGHT * 3.5)
+        network_lbl = Tex(r"\text{Mô hình Neural}\\\text{(LLM / Transformer)}", color=GRAY_A).scale(0.7)
+        fit_in_box(network_lbl, network_box)
 
         self.play(
-            LaggedStart(*[Create(l) for l in gen2_lines], lag_ratio=0.15),
-            LaggedStart(*[FadeIn(d, scale=0.3) for d in gen2_dots], lag_ratio=0.15),
-            run_time=2.5
-        )
-        self.wait(5.5) # Reaches 48.00s
-
-        # 48s - 62s: Second cell division & escaping boundary constraints
-        gen3_dots = VGroup()
-        gen3_lines = VGroup()
-        for i, pos in enumerate(gen2_positions[4:]):
-            parent_dot = gen2_dots[i % len(gen2_dots)]
-            # Set keep_inside=False for outer cells to visual escape closed loops
-            dot = make_vibrating_dot(pos, BLUE_A, keep_inside=False)
-            line = make_updating_line(parent_dot, dot, BLUE_D, 0.45)
-            gen3_dots.add(dot)
-            gen3_lines.add(line)
-
-        cross_lines = VGroup()
-        cross_pairs = [(dots[0], gen2_dots[1]), (dots[1], gen2_dots[2]), (gen2_dots[0], gen2_dots[3])]
-        for d1, d2 in cross_pairs:
-            line = make_updating_line(d1, d2, BLUE_E, 0.35)
-            cross_lines.add(line)
-
-        self.play(
-            LaggedStart(*[Create(l) for l in gen3_lines], lag_ratio=0.15),
-            LaggedStart(*[FadeIn(d, scale=0.3) for d in gen3_dots], lag_ratio=0.15),
-            Create(cross_lines),
-            run_time=3.0
-        )
-        self.wait(11.0) # Reaches 62.00s
-
-        # 62s - 68s: Move the living network to the left
-        petri_group = VGroup(circle, title_lisa, dots, gen2_dots, gen2_lines, gen3_dots, gen3_lines, cross_lines)
-        self.play(
-            petri_group.animate.scale(0.55).shift(LEFT * 3.5 + DOWN * 0.5),
-            run_time=2.5
-        )
-        self.wait(3.5) # Reaches 68.00s
-
-        # =====================================================================
-        # PART 2: SPLIT SCREEN & CLOSED SYSTEM LOSS SATURATION (68.00s - 104.00s [Duration: 36s])
-        # =====================================================================
-        # Closed System Plot on the right
-        axes = Axes(
-            x_range=[0, 8, 1],
-            y_range=[0, 5, 1],
-            x_length=5,
-            y_length=3.5,
-            axis_config={"include_tip": True, "color": GRAY}
-        ).shift(RIGHT * 3.5 + DOWN * 0.5)
-
-        x_lbl = MathTex("t", color=WHITE).scale(0.7).next_to(axes.x_axis.get_end(), DOWN, buff=0.1)
-        y_lbl = MathTex(r"\text{Loss}", color=WHITE).scale(0.7).next_to(axes.y_axis.get_end(), LEFT, buff=0.1)
-        
-        title_closed = Text(
-            "Hệ thống Đóng (Closed System)", 
-            color=RED,
-            weight=BOLD
-        ).scale(0.52).next_to(axes, UP, buff=0.4)
-
-        loss_curve = axes.plot(
-            lambda x: 3.5 * np.exp(-0.8 * x) + 0.5,
-            color=RED,
-            x_range=[0, 7.5]
-        )
-
-        self.play(
-            Create(axes),
-            Write(x_lbl), Write(y_lbl),
-            Write(title_closed),
+            Create(dataset_box), Write(dataset_lbl),
+            Create(network_box), Write(network_lbl),
             run_time=2.0
         )
-        self.wait(6.0) # Reaches 76.00s (Segment 9)
-        
-        self.play(
-            Create(loss_curve),
-            run_time=4.0
-        )
-        self.wait(8.0) # Reaches 88.00s (Segment 10)
-        
-        # Blinking highlight at flatline saturation point
-        flat_dot = Dot(point=axes.c2p(7.0, 0.5), color=YELLOW, radius=0.08)
-        self.play(FadeIn(flat_dot), run_time=0.5)
-        self.play(Flash(flat_dot, color=YELLOW, line_length=0.2, num_lines=12), run_time=1.5)
+        self.wait(10.0) # Accumulate time to 12.5s
 
-        # Draw red transparent "FREEZE" overlay representing AI model lock
-        freeze_rect = SurroundingRectangle(loss_curve, color=RED, fill_color=RED, fill_opacity=0.2, stroke_width=2.5)
-        freeze_label = Text(
-            "FREEZE / ĐÓNG BĂNG MÔ HÌNH", 
-            color=RED_A,
-            weight=BOLD
-        ).scale(0.55).move_to(freeze_rect.get_center())
+        # saturation indicator
+        saturation_warn = Tex(r"\text{\textbf{Điểm Bão Hòa Vật Lý (Saturation Point)}}", color=RED).scale(0.85).to_edge(DOWN, buff=1.0)
+        self.play(Write(saturation_warn), run_time=1.5)
+        self.wait(16.0) # Accumulate time to 30.0s
 
+        # =========================================================================
+        # PHASE 2: ERA OF EXPERIENCE INTRODUCTION (30.0s - 70.0s)
+        # =========================================================================
         self.play(
-            Create(freeze_rect),
-            Write(freeze_label),
-            run_time=2.0
-        )
-        self.wait(10.0) # Reaches 102.00s (Segment 11 & 12)
-
-        # Clean the stage
-        self.play(
-            FadeOut(petri_group),
-            FadeOut(axes), FadeOut(x_lbl), FadeOut(y_lbl), FadeOut(title_closed),
-            FadeOut(loss_curve), FadeOut(freeze_rect), FadeOut(freeze_label), FadeOut(flat_dot),
+            FadeOut(dataset_box), FadeOut(dataset_lbl),
+            FadeOut(network_box), FadeOut(network_lbl),
+            FadeOut(saturation_warn),
             run_time=1.5
         )
-        self.wait(0.5) # Reaches 104.00s
 
-        # =====================================================================
-        # PART 3: COMPARISON TABLE (104.00s - 132.28s [Duration: 28.28s])
-        # =====================================================================
-        # Comparison Table Title
-        title_table = Text(
-            "So sánh Đặc tính Bản chất của Hai Hệ thống", 
-            color=GOLD,
-            weight=BOLD
-        ).to_edge(UP, buff=0.5).scale(0.7)
+        question = Tex(r"\text{Làm sao để AI tự học xem nên học dữ liệu nào?}", color=GOLD).scale(0.85).shift(UP * 1.5)
+        era_quote = Tex(
+            r"\text{\textbf{``Kỷ nguyên Trải nghiệm'' (The Era of Experience)}}",
+            r"\text{-- David Silver \& Richard Sutton (DeepMind)}",
+            tex_to_color_map={"Kỷ nguyên Trải nghiệm": GOLD, "David Silver & Richard Sutton": BLUE_C}
+        ).arrange(DOWN, buff=0.25).scale(0.8).shift(DOWN * 0.5)
 
-        # Table cell utility
-        def make_cell(text, x, y, w, h, color=WHITE, font_size=20, is_bold=False):
-            box = RoundedRectangle(width=w, height=h, corner_radius=0.08, stroke_color=GRAY_E, fill_color=GRAY_D, fill_opacity=0.05).move_to([x, y, 0])
-            if is_bold:
-                lbl = Text(text, color=color, font_size=font_size, weight=BOLD)
-            else:
-                lbl = Text(text, color=color, font_size=font_size)
-            fit_in_box(lbl, box, padding=0.1)
-            return VGroup(box, lbl)
+        self.play(Write(question), run_time=2.0)
+        self.wait(10.0) # Accumulate time to 43.5s
+        self.play(FadeIn(era_quote, shift=UP * 0.2), run_time=2.0)
+        self.wait(24.5) # Accumulate time to 70.0s
 
-        col_x = [-4.5, -1.0, 3.5]
-        
-        # Header Row
-        h1 = make_cell("Đặc tính", col_x[0], 1.5, 2.3, 0.7, color=GOLD, is_bold=True)
-        h2 = make_cell("Hệ thống Đóng (Closed)", col_x[1], 1.5, 4.3, 0.7, color=RED, is_bold=True)
-        h3 = make_cell("Hệ thống Mở (Open-Ended)", col_x[2], 1.5, 4.3, 0.7, color=GREEN, is_bold=True)
-        
-        # Row 1: Data Space
-        r1_1 = make_cell("Không gian dữ liệu", col_x[0], 0.5, 2.3, 0.9, color=WHITE, is_bold=True)
-        r1_2 = make_cell("Tĩnh, cố định và giới hạn (In-Distribution)", col_x[1], 0.5, 4.3, 0.9, color=GRAY_A)
-        r1_3 = make_cell("Động, liên tục mở rộng và tự sản sinh vô tận", col_x[2], 0.5, 4.3, 0.9, color=GREEN_B)
+        # =========================================================================
+        # PHASE 3: Watts' ORGANISM-ENVIRONMENT MUTUALITY (70.0s - 110.0s)
+        # =========================================================================
+        self.play(FadeOut(question), FadeOut(era_quote), run_time=1.5)
 
-        # Row 2: Optimization Goal
-        r2_1 = make_cell("Mục tiêu tối ưu", col_x[0], -0.5, 2.3, 0.9, color=WHITE, is_bold=True)
-        r2_2 = make_cell("Hàm mục tiêu cố định do con người định nghĩa", col_x[1], -0.5, 4.3, 0.9, color=GRAY_A)
-        r2_3 = make_cell("Mục tiêu động, tự sinh thử thách tăng dần", col_x[2], -0.5, 4.3, 0.9, color=GREEN_B)
+        organism = RoundedRectangle(width=3.2, height=1.2, color=BLUE_C, fill_color=BLUE_E, fill_opacity=0.15).shift(LEFT * 3.5 + DOWN * 0.8)
+        org_lbl = Tex(r"\text{\textbf{Sinh vật (Organism)}}", color=BLUE_C)
+        fit_in_box(org_lbl, organism)
 
-        # Row 3: Evolution Ability
-        r3_1 = make_cell("Khả năng tiến hóa", col_x[0], -1.5, 2.3, 0.9, color=WHITE, is_bold=True)
-        r3_2 = make_cell("Giới hạn sau hội tụ; cần kỹ sư nâng cấp thủ công", col_x[1], -1.5, 4.3, 0.9, color=GRAY_A)
-        r3_3 = make_cell("Tự vận hành, liên tục kiến tạo tạo tác phức tạp", col_x[2], -1.5, 4.3, 0.9, color=GREEN_B)
+        environment = RoundedRectangle(width=3.2, height=1.2, color=GREEN_C, fill_color=GREEN_E, fill_opacity=0.15).shift(RIGHT * 3.5 + DOWN * 0.8)
+        env_lbl = Tex(r"\text{\textbf{Môi trường (Environment)}}", color=GREEN_C)
+        fit_in_box(env_lbl, environment)
 
-        # Golden-Green Highlight on Open-Ended Column
-        open_column_highlight = RoundedRectangle(
-            width=4.5, height=3.8, corner_radius=0.1, 
-            color=GREEN, stroke_width=2.5, fill_color=GREEN, fill_opacity=0.06
-        ).move_to([col_x[2], -0.05, 0])
+        watts_title = Tex(r"\text{\textbf{Alan Watts (1972)}}", color=GOLD).scale(1.0).shift(UP * 1.8)
+        watts_quote = Tex(
+            r"``The environment grows the organism, and the organism creates the environment.''",
+            color=WHITE
+        ).scale(0.7).next_to(watts_title, DOWN, buff=0.3)
 
-        # Perfectly timed row fade-ins matching the detailed Vietnamese speech segments
-        self.play(Write(title_table), run_time=1.5)
-        self.wait(1.5) # Reaches 107.00s
+        arrow_grows = ArcBetweenPoints(start=environment.get_top() + LEFT * 0.2, end=organism.get_top() + RIGHT * 0.2, angle=-TAU/6, color=GOLD).add_tip(tip_length=0.2)
+        arrow_creates = ArcBetweenPoints(start=organism.get_bottom() + RIGHT * 0.2, end=environment.get_bottom() + LEFT * 0.2, angle=-TAU/6, color=GOLD).add_tip(tip_length=0.2)
 
-        # Header
-        self.play(Create(h1[0]), Write(h1[1]), Create(h2[0]), Write(h2[1]), Create(h3[0]), Write(h3[1]), run_time=2.0)
-        self.wait(1.0) # Reaches 110.00s
-
-        # Row 1
-        self.play(Create(r1_1[0]), Write(r1_1[1]), Create(r1_2[0]), Write(r1_2[1]), Create(r1_3[0]), Write(r1_3[1]), run_time=2.0)
-        self.wait(1.0) # Reaches 113.00s
-
-        # Row 2
-        self.play(Create(r2_1[0]), Write(r2_1[1]), Create(r2_2[0]), Write(r2_2[1]), Create(r2_3[0]), Write(r2_3[1]), run_time=2.0)
-        self.wait(1.0) # Reaches 116.00s
-
-        # Row 3
-        self.play(Create(r3_1[0]), Write(r3_1[1]), Create(r3_2[0]), Write(r3_2[1]), Create(r3_3[0]), Write(r3_3[1]), run_time=2.0)
-        self.wait(2.0) # Reaches 120.00s
-
-        # Highlight Open Column
-        self.play(Create(open_column_highlight), run_time=2.0)
-        self.wait(8.0) # Reaches 130.00s
-
-        # End of Phase 1
         self.play(
-            FadeOut(title_table),
-            FadeOut(h1), FadeOut(h2), FadeOut(h3),
-            FadeOut(r1_1), FadeOut(r1_2), FadeOut(r1_3),
-            FadeOut(r2_1), FadeOut(r2_2), FadeOut(r2_3),
-            FadeOut(r3_1), FadeOut(r3_2), FadeOut(r3_3),
-            FadeOut(open_column_highlight),
+            Write(watts_title), FadeIn(watts_quote),
+            Create(organism), Write(org_lbl),
+            Create(environment), Write(env_lbl),
+            run_time=2.5
+        )
+        self.wait(15.0) # Accumulate time to 89.0s
+        self.play(Create(arrow_grows), Create(arrow_creates), run_time=2.0)
+        self.wait(19.0) # Accumulate time to 110.0s
+
+        # =========================================================================
+        # PHASE 4: OBJECTIVE CURRICULUM EVOLUTION (110.0s - 150.0s)
+        # =========================================================================
+        self.play(
+            FadeOut(watts_title), FadeOut(watts_quote),
+            FadeOut(organism), FadeOut(org_lbl),
+            FadeOut(environment), FadeOut(env_lbl),
+            FadeOut(arrow_grows), FadeOut(arrow_creates),
+            run_time=1.5
+        )
+
+        future_direction = Tex(r"\text{\textbf{Đích đến: Thực thể tự sinh giáo trình huấn luyện}}", color=GOLD).scale(0.9)
+        self.play(Write(future_direction), run_time=2.0)
+        self.wait(36.5) # Wait to finish total 150 seconds
+        self.play(FadeOut(future_direction), FadeOut(title), run_time=1.5)
+
+
+class SC_02_TheMetaphorOfThePetriDish(VietnameseMovingCameraScene):
+    """
+    SC_02: The Metaphor of the Petri Dish.
+    Focus: Simpsons' Genesis Tub anecdote, evolution of cells to golden city structures, contrasting with closed Go/Chess environments.
+    """
+    def construct(self):
+        load_safe_sound(self, "SC_02_PetriDish.wav")
+        title = create_title_banner(r"SC\_02: The Metaphor of the Petri Dish")
+        self.add(title)
+        self.wait(0.5)
+
+        # =========================================================================
+        # PHASE 1: GENESIS TUB ANECDOTE (0.0s - 40.0s)
+        # =========================================================================
+        petri_dish = PetriDish().shift(DOWN * 0.5)
+        anecdote_title = Tex(r"\text{Lisa Simpson: The Genesis Tub (1996)}", color=GOLD).scale(0.85).next_to(title, DOWN, buff=0.3)
+        
+        self.play(Create(petri_dish), Write(anecdote_title), run_time=2.0)
+        self.wait(10.0) # Accumulate to 12.5s
+        
+        # Trigger mock lightning and initial cell mutation
+        lightning = Line(UP * 3, petri_dish.tooth_center.get_top(), color=YELLOW, stroke_width=4)
+        self.play(Create(lightning), run_time=0.3)
+        self.play(FadeOut(lightning), run_time=0.2)
+        self.wait(27.0) # Accumulate to 40.0s
+
+        # =========================================================================
+        # PHASE 2: BIOLOGICAL TO CULTURAL EVOLUTION (40.0s - 80.0s)
+        # =========================================================================
+        # Focus camera on petri dish center
+        self.play(
+            self.camera.frame.animate.move_to(petri_dish.get_center()).set(width=petri_dish.width * 1.5),
             run_time=2.0
         )
-        self.wait(0.28) # Exact 132.28 seconds match!
+        self.wait(5.0) # Accumulate to 47.0s
+        
+        # Mutate tooth to cities mock
+        city_label = Tex(r"\text{Tiến hóa Sinh học } \rightarrow \text{ Tiến hóa Văn hóa \& Công nghệ}", color=GOLD).scale(0.35).next_to(petri_dish.tooth_center, UP, buff=0.1)
+        self.play(Write(city_label), run_time=1.5)
+        self.wait(31.5) # Accumulate to 80.0s
+
+        # =========================================================================
+        # PHASE 3: CONTRAST WITH CLOSED AI SYSTEMS (80.0s - 120.0s)
+        # =========================================================================
+        # Reset camera
+        self.play(
+            self.camera.frame.animate.move_to(ORIGIN).set(width=SCREEN_WIDTH),
+            run_time=2.0
+        )
+        self.play(
+            FadeOut(petri_dish), FadeOut(anecdote_title), FadeOut(city_label),
+            run_time=1.0
+        )
+
+        closed_box = RoundedRectangle(width=5.0, height=3.5, color=RED, fill_color=RED_E, fill_opacity=0.1).shift(LEFT * 3.2 + DOWN * 0.5)
+        closed_lbl = Tex(r"\text{\textbf{Hệ thống Đóng (Closed System)}}\\e.g. Cờ Vây (Go) 19x19", color=RED).scale(0.7)
+        fit_in_box(closed_lbl, closed_box)
+
+        open_box = RoundedRectangle(width=5.0, height=3.5, color=GREEN_C, fill_color=GREEN_E, fill_opacity=0.15).shift(RIGHT * 3.2 + DOWN * 0.5)
+        open_lbl = Tex(r"\text{\textbf{Hệ thống Mở (Open-Ended System)}}\\Đĩa Petri Vô hạn", color=GREEN_C).scale(0.7)
+        fit_in_box(open_lbl, open_box)
+
+        self.play(
+            Create(closed_box), Write(closed_lbl),
+            Create(open_box), Write(open_lbl),
+            run_time=2.5
+        )
+        self.wait(34.0) # Wait to finish total 120 seconds
+        self.play(FadeOut(closed_box), FadeOut(closed_lbl), FadeOut(open_box), FadeOut(open_lbl), FadeOut(title), run_time=1.5)
 
 
-# =========================================================================
-# III. SCAFFOLDS FOR REMAINDER SCENES (PHASES 2 TO 7)
-# =========================================================================
-
-class Phase2NethackAGI(VietnameseMovingCameraScene):
+class SC_03_DeconstructingOpenEndedSystems(VietnameseScene):
+    """
+    SC_03: Deconstructing Open-Ended Systems.
+    Focus: Standish definition (observer-dependent), Noisy TV paradox, Venn diagram of Novelty and Learnability.
+    """
     def construct(self):
-        title = Text("Phase 2: Điểm mù 1.7% tại NetHack & Bản chất AGI", color=GOLD, weight=BOLD).scale(0.7)
-        self.play(Write(title))
-        self.wait(2.0)
-        self.play(FadeOut(title))
+        load_safe_sound(self, "SC_03_ObserverVenn.wav")
+        title = create_title_banner(r"SC\_03: Deconstructing Open-Ended Systems")
+        self.play(FadeIn(title), run_time=1.0)
+        self.wait(0.5)
+
+        # =========================================================================
+        # PHASE 1: STANDISH & OBSERVER PERSPECTIVE (0.0s - 45.0s)
+        # =========================================================================
+        observer_eye = Circle(radius=0.6, color=GOLD).shift(UP * 1.2)
+        eye_pupil = Dot(point=observer_eye.get_center(), radius=0.2, color=GOLD)
+        observer_lbl = Tex(r"\text{Quan sát viên (Observer Perspective)}", color=GOLD).scale(0.75).next_to(observer_eye, UP, buff=0.15)
+        
+        standish_text = Tex(
+            r"\text{Standish: Tính mở phụ thuộc vào lăng kính nhận diện của Observer}",
+            color=WHITE
+        ).scale(0.75).shift(DOWN * 1.2)
+
+        self.play(
+            Create(observer_eye), Create(eye_pupil), Write(observer_lbl),
+            run_time=2.0
+        )
+        self.play(Write(standish_text), run_time=1.5)
+        self.wait(40.0) # Accumulate to 45.0s
+
+        # =========================================================================
+        # PHASE 2: NOISY TV PARADOX (45.0s - 100.0s)
+        # =========================================================================
+        self.play(
+            FadeOut(observer_eye), FadeOut(eye_pupil), FadeOut(observer_lbl), FadeOut(standish_text),
+            run_time=1.0
+        )
+        
+        noisy_tv_box = RoundedRectangle(width=5.5, height=3.2, color=RED, fill_color=GRAY_E, fill_opacity=0.3).shift(LEFT * 3.2 + DOWN * 0.5)
+        noisy_tv_lbl = Tex(r"\text{Nghịch lý TV Nhiễu Hạt}\\\text{Entropy tối đa} \rightarrow \text{Mới mẻ (Novel)}\\\text{nhưng không học được (Unlearnable)}", color=RED).scale(0.75)
+        fit_in_box(noisy_tv_lbl, noisy_tv_box)
+
+        dennis_hughes_box = RoundedRectangle(width=5.5, height=3.2, color=BLUE_C, fill_color=BLUE_E, fill_opacity=0.1).shift(RIGHT * 3.2 + DOWN * 0.5)
+        dennis_hughes_lbl = Tex(r"\text{Dennis \& Hughes Definition}\\\text{Hiện vật vừa phải Mới mẻ (Novel)}\\\text{\textbf{Vừa phải học được (Learnable)}}", color=BLUE_C).scale(0.75)
+        fit_in_box(dennis_hughes_lbl, dennis_hughes_box)
+
+        self.play(
+            Create(noisy_tv_box), Write(noisy_tv_lbl),
+            Create(dennis_hughes_box), Write(dennis_hughes_lbl),
+            run_time=2.5
+        )
+        self.wait(51.5) # Accumulate to 100.0s
+
+        # =========================================================================
+        # PHASE 3: VENN DIAGRAM & LOGIC EQUATION (100.0s - 180.0s)
+        # =========================================================================
+        self.play(
+            FadeOut(noisy_tv_box), FadeOut(noisy_tv_lbl),
+            FadeOut(dennis_hughes_box), FadeOut(dennis_hughes_lbl),
+            run_time=1.0
+        )
+
+        # Venn Diagram representation
+        novelty_circle = Circle(radius=1.8, color=BLUE_C, fill_color=BLUE_E, fill_opacity=0.35).shift(LEFT * 1.0 + DOWN * 0.5)
+        novelty_lbl = Tex(r"\text{Novelty (Mới mẻ)}", color=BLUE_C).scale(0.7).next_to(novelty_circle.get_left(), UP, buff=0.1)
+
+        learnability_circle = Circle(radius=1.8, color=GREEN_C, fill_color=GREEN_E, fill_opacity=0.35).shift(RIGHT * 1.0 + DOWN * 0.5)
+        learnability_lbl = Tex(r"\text{Learnability (Học được)}", color=GREEN_C).scale(0.7).next_to(learnability_circle.get_right(), UP, buff=0.1)
+
+        self.play(
+            Create(novelty_circle), Write(novelty_lbl),
+            Create(learnability_circle), Write(learnability_lbl),
+            run_time=2.0
+        )
+        self.wait(10.0) # Accumulate to 113.0s
+
+        # Highlight intersection
+        intersection_lbl = Tex(r"\text{\textbf{Open-Endedness}}", color=GOLD).scale(0.85).shift(DOWN * 0.5)
+        self.play(Write(intersection_lbl), run_time=1.5)
+        self.wait(20.0) # Accumulate to 134.5s
+
+        # Show logic equation
+        equation = MathTex(
+            r"\mathcal{S} \text{ is Open-Ended} \iff \forall t, \text{ Artifact}(t) \in \{\text{Novel} \cap \text{Learnable}\}"
+        ).scale(0.75).shift(UP * 1.5)
+        self.play(Write(equation), run_time=2.0)
+        
+        self.wait(42.0) # Wait to finish total 180 seconds
+        self.play(
+            FadeOut(novelty_circle), FadeOut(novelty_lbl),
+            FadeOut(learnability_circle), FadeOut(learnability_lbl),
+            FadeOut(intersection_lbl), FadeOut(equation),
+            FadeOut(title),
+            run_time=1.5
+        )
 
 
-class Phase3MathOpenEndedness(VietnameseScene):
+class SC_04_TheIllusionOfGoals(VietnameseScene):
+    """
+    SC_04: The Illusion of Goals (Objective Design).
+    Focus: Pitfalls of target optimization in open spaces, Stepping stones theory (Vacuum tube -> Radio -> Computer).
+    """
     def construct(self):
-        title = Text("Phase 3: Khung toán học chặt chẽ của tính mở (ICML 2024)", color=GOLD, weight=BOLD).scale(0.7)
-        self.play(Write(title))
-        self.wait(2.0)
-        self.play(FadeOut(title))
+        load_safe_sound(self, "SC_04_SteppingStones.wav")
+        title = create_title_banner(r"SC\_04: The Illusion of Goals (Objective Design)")
+        self.play(FadeIn(title), run_time=1.0)
+        self.wait(0.5)
+
+        # =========================================================================
+        # PHASE 1: Objective Design Pitfall (0.0s - 50.0s)
+        # =========================================================================
+        landscape = ObjectiveLandscape().shift(DOWN * 0.5)
+        warn_lbl = Tex(r"\text{La bàn giả (False Compass) trong Hệ Thống Mở}", color=RED).scale(0.8).to_edge(DOWN, buff=0.8)
+        
+        self.play(Create(landscape.contours), Create(landscape.flag), Create(landscape.agent_dot), run_time=2.5)
+        self.wait(10.0) # Accumulate to 14.0s
+        self.play(Write(warn_lbl), run_time=1.5)
+        self.wait(34.5) # Accumulate to 50.0s
+
+        # =========================================================================
+        # PHASE 2: STEPPING STONES THEORY (50.0s - 100.0s)
+        # =========================================================================
+        self.play(
+            FadeOut(landscape.contours), FadeOut(landscape.flag), FadeOut(landscape.agent_dot), FadeOut(warn_lbl),
+            run_time=1.0
+        )
+
+        concept_title = Tex(r"\text{\textbf{Lý thuyết Bước đệm (Stepping Stones) -- Kenneth Stanley}}", color=GOLD).scale(0.85).shift(UP * 1.5)
+        
+        card1 = create_concept_card("Ống chân không (1900s)", ["Không nhằm mục đích chế tạo PC", "Để khuếch đại tín hiệu radio"], border_color=BLUE_C).shift(LEFT * 4.5 + DOWN * 0.5)
+        card2 = create_concept_card("Máy tính điện tử (1940s)", ["Được xây dựng từ ống chân không", "Tiến bộ phi tuyến tính"], border_color=ORANGE).shift(RIGHT * 4.5 + DOWN * 0.5)
+        arrow = Arrow(start=card1.get_right(), end=card2.get_left(), color=GOLD)
+
+        self.play(Write(concept_title), run_time=1.5)
+        self.play(Create(card1), run_time=1.5)
+        self.play(Create(arrow), Create(card2), run_time=2.0)
+        self.wait(44.0) # Accumulate to 100.0s
+
+        # =========================================================================
+        # PHASE 3: CONTOUR EXPLORATION & FOG CLEARING (100.0s - 180.0s)
+        # =========================================================================
+        self.play(
+            FadeOut(concept_title), FadeOut(card1), FadeOut(card2), FadeOut(arrow),
+            run_time=1.0
+        )
+
+        exp_graph = ExplorationGraph().shift(DOWN * 0.5)
+        fog_box = Rectangle(width=12.0, height=4.5, color=GRAY_E, fill_color=GRAY_E, fill_opacity=0.75).shift(DOWN * 0.5)
+        fog_lbl = Tex(r"\text{Sương mù tri thức (Uncertainty Fog)}", color=WHITE).scale(0.8).move_to(fog_box.get_center())
+
+        self.play(Create(exp_graph), Create(fog_box), Write(fog_lbl), run_time=2.5)
+        self.wait(15.0) # Accumulate to 118.5s
+        
+        # Clear fog and highlight stepping stones
+        self.play(FadeOut(fog_box), FadeOut(fog_lbl), run_time=2.0)
+        self.wait(58.0) # Wait to finish total 180 seconds
+        self.play(FadeOut(exp_graph), FadeOut(title), run_time=1.5)
 
 
-class Phase4ObjectiveSteppingStones(VietnameseScene):
+class SC_05_TheConcretePlaygrounds(VietnameseMovingCameraScene):
+    """
+    SC_05: The Concrete Playgrounds: NetHack to XLand.
+    Focus: NetHack complex ASCII grid mechanics, XLand matrices (Terrain x Objects x Rules), 25 billion tasks explosion.
+    """
     def construct(self):
-        title = Text("Phase 4: Nghịch lý mục tiêu & Lý thuyết Bước đệm", color=GOLD, weight=BOLD).scale(0.7)
-        self.play(Write(title))
-        self.wait(2.0)
-        self.play(FadeOut(title))
+        load_safe_sound(self, "SC_05_NetHackXLand.wav")
+        title = create_title_banner(r"SC\_05: The Concrete Playgrounds: NetHack to XLand")
+        self.add(title)
+        self.wait(0.5)
+
+        # =========================================================================
+        # PHASE 1: NETHACK ASCII GAMEPLAY (0.0s - 45.0s)
+        # =========================================================================
+        nethack_env = NetHackEnvironment().shift(DOWN * 0.5)
+        nethack_lbl = Tex(r"\text{NetHack: Không gian tìm kiếm toàn vẹn Turing (Turing-Complete)}", color=BLUE_C).scale(0.85).next_to(title, DOWN, buff=0.3)
+
+        self.play(Create(nethack_env.ascii_grid), Create(nethack_env.magnifier), Write(nethack_lbl), run_time=2.5)
+        self.wait(10.0) # Accumulate to 13.0s
+        
+        # Zoom camera onto the magnifier lens center
+        self.play(
+            self.camera.frame.animate.move_to(nethack_env.lens.get_center()).set(width=nethack_env.lens.width * 2.5),
+            run_time=2.0
+        )
+        self.wait(28.5) # Accumulate to 45.0s
+
+        # =========================================================================
+        # PHASE 2: XLAND SYSTEM INTRO (45.0s - 90.0s)
+        # =========================================================================
+        # Reset camera
+        self.play(
+            self.camera.frame.animate.move_to(ORIGIN).set(width=SCREEN_WIDTH),
+            run_time=2.0
+        )
+        self.play(
+            FadeOut(nethack_env), FadeOut(nethack_lbl),
+            run_time=1.0
+        )
+
+        xland_lbl = Tex(r"\text{XLand: Sinh môi trường thủ tục (Procedural Generation)}", color=GOLD).scale(0.85).next_to(title, DOWN, buff=0.3)
+        self.play(Write(xland_lbl), run_time=1.5)
+
+        # Create three matrices representations
+        matrix_t = RoundedRectangle(width=2.5, height=2.5, color=BLUE_C, fill_color=BLUE_E, fill_opacity=0.15).shift(LEFT * 4.0 + DOWN * 0.5)
+        lbl_t = Tex(r"\text{\textbf{Địa hình (T)}}\\Mountains / Plains", color=BLUE_C).scale(0.65)
+        fit_in_box(lbl_t, matrix_t)
+
+        matrix_o = RoundedRectangle(width=2.5, height=2.5, color=ORANGE, fill_color=BLACK, fill_opacity=0.8).shift(DOWN * 0.5)
+        lbl_o = Tex(r"\text{\textbf{Vật thể (O)}}\\Objects / Tools", color=ORANGE).scale(0.65)
+        fit_in_box(lbl_o, matrix_o)
+
+        matrix_r = RoundedRectangle(width=2.5, height=2.5, color=GREEN_C, fill_color=GREEN_E, fill_opacity=0.15).shift(RIGHT * 4.0 + DOWN * 0.5)
+        lbl_r = Tex(r"\text{\textbf{Luật chơi (R)}}\\Co-op / Adversarial", color=GREEN_C).scale(0.65)
+        fit_in_box(lbl_r, matrix_r)
+
+        self.play(
+            Create(matrix_t), Write(lbl_t),
+            Create(matrix_o), Write(lbl_o),
+            Create(matrix_r), Write(lbl_r),
+            run_time=3.0
+        )
+        self.wait(35.5) # Accumulate to 90.0s
+
+        # =========================================================================
+        # PHASE 3: COMBINATORIAL TASK EXPLOSION (90.0s - 210.0s)
+        # =========================================================================
+        self.play(
+            FadeOut(matrix_t), FadeOut(lbl_t),
+            FadeOut(matrix_o), FadeOut(lbl_o),
+            FadeOut(matrix_r), FadeOut(lbl_r),
+            FadeOut(xland_lbl),
+            run_time=1.5
+        )
+
+        big_number = Tex(r"\text{\textbf{25,000,000,000}}", color=ORANGE).scale(2.2).shift(UP * 0.5)
+        tasks_lbl = Tex(r"\text{Nhiệm vụ độc lập trong XLand (Combinatorial Explosion)}", color=WHITE).scale(0.85).next_to(big_number, DOWN, buff=0.4)
+
+        self.play(Write(big_number), run_time=2.0)
+        self.play(FadeIn(tasks_lbl, shift=UP * 0.2), run_time=1.5)
+        self.wait(115.0) # Wait to finish total 210 seconds
+        
+        self.play(FadeOut(big_number), FadeOut(tasks_lbl), FadeOut(title), run_time=1.5)
 
 
-class Phase5XLandGoldilocks(VietnameseScene):
+class SC_06_TheAutocurriculaBottleneck(VietnameseScene):
+    """
+    SC_06: The Autocurricula Bottleneck & Goldilocks Zone.
+    Focus: Failure of self-play (niche entrapment), difficulty scaling, cognitive Goldilocks Zone.
+    """
     def construct(self):
-        title = Text("Phase 5: Dự án XLand 2.0 & Vùng Goldilocks", color=GOLD, weight=BOLD).scale(0.7)
-        self.play(Write(title))
-        self.wait(2.0)
-        self.play(FadeOut(title))
+        load_safe_sound(self, "SC_06_GoldilocksNiche.wav")
+        title = create_title_banner(r"SC\_06: The Autocurricula Bottleneck \& Goldilocks Zone")
+        self.play(FadeIn(title), run_time=1.0)
+        self.wait(0.5)
+
+        # =========================================================================
+        # PHASE 1: SELF-PLAY & NICHE ENTRAPMENT (0.0s - 45.0s)
+        # =========================================================================
+        loop_circle = Circle(radius=1.5, color=RED, stroke_width=3).shift(LEFT * 3.5 + DOWN * 0.5)
+        agent_dot = Dot(color=BLUE_C).move_to(loop_circle.point_at_angle(0))
+        niche_lbl = Tex(r"\text{Kẹt trong phân khúc hẹp}\\\text{(Niche Entrapment Loop)}", color=RED).scale(0.75).next_to(loop_circle, UP, buff=0.2)
+
+        self.play(Create(loop_circle), Create(agent_dot), Write(niche_lbl), run_time=2.0)
+        # Spin agent in circular trap loop
+        self.play(MoveAlongPath(agent_dot, loop_circle), run_time=3.0, rate_func=linear)
+        self.wait(38.0) # Accumulate to 45.0s
+
+        # =========================================================================
+        # PHASE 2: COGNITIVE GOLDILOCKS ZONE (45.0s - 95.0s)
+        # =========================================================================
+        self.play(
+            FadeOut(loop_circle), FadeOut(agent_dot), FadeOut(niche_lbl),
+            run_time=1.0
+        )
+
+        meter = GoldilocksZoneMeter(height=3.5).shift(RIGHT * 3.0 + DOWN * 0.5)
+        meter_explain = Tex(
+            r"\text{\textbf{Vùng Goldilocks nhận thức (Cognitive Zone)}}\\",
+            r"\text{\textbf{Quá dễ:} gradient triệt tiêu, đóng băng năng lực\\}",
+            r"\text{\textbf{Quá khó:} bế tắc, không thể học hỏi được\\}",
+            r"\text{\textbf{Goldilocks (Vàng):} nhiệm vụ nằm ở biên nỗ lực}",
+            tex_to_color_map={
+                "Quá dễ:": BLUE_C,
+                "Quá khó:": RED,
+                "Goldilocks (Vàng):": GOLD
+            }
+        ).arrange(DOWN, aligned_edge=LEFT, buff=0.25).scale(0.65).shift(LEFT * 3.0 + DOWN * 0.5)
+
+        self.play(Create(meter), run_time=2.0)
+        self.play(FadeIn(meter_explain, shift=RIGHT * 0.2), run_time=2.0)
+        self.wait(10.0) # Accumulate to 60s
+        
+        # update indicator pointer to Goldilocks
+        self.play(meter.pointer.animate.shift(UP * 1.15), run_time=1.5)
+        self.wait(32.5) # Accumulate to 95.0s
+
+        # =========================================================================
+        # PHASE 3: UNIFORM SAMPLING & BREAKDOWN (95.0s - 180.0s)
+        # =========================================================================
+        self.play(FadeOut(meter_explain), run_time=1.0)
+        
+        collapse_lbl = Tex(r"\text{Uniform Sampling } \rightarrow \text{ Đứt gãy giáo trình huấn luyện}", color=RED).scale(0.85).shift(LEFT * 3.0 + DOWN * 0.5)
+        self.play(Write(collapse_lbl), run_time=1.5)
+        
+        # Breakdown shake effect on meter
+        self.play(meter.animate.shift(UP * 0.1), run_time=0.1)
+        self.play(meter.animate.shift(DOWN * 0.2), run_time=0.1)
+        self.play(meter.animate.shift(UP * 0.1), run_time=0.1)
+        
+        self.wait(80.7) # Wait to finish total 180 seconds
+        self.play(FadeOut(meter), FadeOut(collapse_lbl), FadeOut(title), run_time=1.5)
 
 
-class Phase6FoundationEvolution(VietnameseScene):
+class SC_07_TheEvolutionaryEngines(VietnameseScene):
+    """
+    SC_07: The Evolutionary Engines: Foundation Models.
+    Focus: LLM Task Proposer as semantic variation/selection operators, sample efficiency graph, AI Safety / Specification Gaming, and transition.
+    """
     def construct(self):
-        title = Text("Phase 6: FM làm động cơ tiến hóa mở", color=GOLD, weight=BOLD).scale(0.7)
-        self.play(Write(title))
-        self.wait(2.0)
-        self.play(FadeOut(title))
+        load_safe_sound(self, "SC_07_EvolutionOperators.wav")
+        title = create_title_banner(r"SC\_07: The Evolutionary Engines: Foundation Models")
+        self.play(FadeIn(title), run_time=1.0)
+        self.wait(0.5)
 
+        # =========================================================================
+        # PHASE 1: FOUNDATION MODELS AS EVOLUTIONARY OPERATORS (0.0s - 45.0s)
+        # =========================================================================
+        llm_box = RoundedRectangle(width=3.8, height=2.2, color=ORANGE, fill_color=BLACK, fill_opacity=0.8).shift(RIGHT * 3.5 + UP * 0.5)
+        llm_lbl = Tex(r"\text{LLM Task Proposer}\\\text{(Toán tử Tiến hóa)}", color=ORANGE).scale(0.8)
+        fit_in_box(llm_lbl, llm_box)
 
-class Phase7FoundationWorldModels(VietnameseMovingCameraScene):
-    def construct(self):
-        title = Text("Phase 7: Dịch chuyển sang Foundation World Models", color=GOLD, weight=BOLD).scale(0.7)
-        self.play(Write(title))
-        self.wait(2.0)
-        self.play(FadeOut(title))
+        sim_box = RoundedRectangle(width=3.8, height=2.2, color=BLUE_C, fill_color=BLUE_E, fill_opacity=0.15).shift(LEFT * 3.5 + UP * 0.5)
+        sim_lbl = Tex(r"\text{Không gian mô phỏng 3D}\\\text{(Agent \& Environment)}", color=BLUE_C).scale(0.8)
+        fit_in_box(sim_lbl, sim_box)
+
+        self.play(
+            Create(llm_box), Write(llm_lbl),
+            Create(sim_box), Write(sim_lbl),
+            run_time=2.5
+        )
+        self.wait(41.0) # Accumulate to 45.0s
+
+        # =========================================================================
+        # PHASE 2: FEEDBACK LOOP FOR VARIATION & SELECTION (45.0s - 95.0s)
+        # =========================================================================
+        # Draw dynamic feedback flow arrows
+        arrow_variation = ArcBetweenPoints(start=llm_box.get_top(), end=sim_box.get_top(), angle=TAU/8, color=GOLD).add_tip(tip_length=0.2)
+        var_lbl = Tex(r"\text{Biến dị Ngữ nghĩa (Variation)}", color=GOLD).scale(0.6).next_to(arrow_variation, UP, buff=0.1)
+
+        arrow_selection = ArcBetweenPoints(start=sim_box.get_bottom(), end=llm_box.get_bottom(), angle=TAU/8, color=GOLD).add_tip(tip_length=0.2)
+        sel_lbl = Tex(r"\text{Chọn lọc Ngữ nghĩa (Selection)}", color=GOLD).scale(0.6).next_to(arrow_selection, DOWN, buff=0.1)
+
+        self.play(
+            Create(arrow_variation), Write(var_lbl),
+            Create(arrow_selection), Write(sel_lbl),
+            run_time=2.5
+        )
+        self.wait(46.0) # Accumulate to 95.0s
+
+        # =========================================================================
+        # PHASE 3: PERFORMANCE GRAPH & AI SAFETY (95.0s - 135.0s)
+        # =========================================================================
+        self.play(
+            FadeOut(llm_box), FadeOut(llm_lbl),
+            FadeOut(sim_box), FadeOut(sim_lbl),
+            FadeOut(arrow_variation), FadeOut(var_lbl),
+            FadeOut(arrow_selection), FadeOut(sel_lbl),
+            run_time=1.5
+        )
+
+        # Performance Graph Mockup
+        graph_axes = Axes(x_range=[0, 10, 2], y_range=[0, 10, 2], x_length=5, y_length=3, axis_config={"color": GRAY}).shift(LEFT * 3.5 + DOWN * 0.8)
+        graph_lbl = Tex(r"\text{Hiệu suất mẫu (Sample Efficiency)}", color=WHITE).scale(0.7).next_to(graph_axes, UP, buff=0.2)
+
+        # Lines representing performance curves
+        llm_curve = Line(start=graph_axes.c2p(0, 1), end=graph_axes.c2p(8, 9), color=GREEN_C, stroke_width=4)
+        uniform_curve = Line(start=graph_axes.c2p(0, 1), end=graph_axes.c2p(8, 2), color=GRAY, stroke_width=4)
+
+        # AI Safety Card
+        safety_card = create_concept_card("An toàn AI (AI Safety)", ["Specification Gaming (Lừa dối)", "Cần Proxy Observer độc lập"], border_color=RED, width=5.2, height=3.0).shift(RIGHT * 3.5 + DOWN * 0.8)
+
+        self.play(Create(graph_axes), Write(graph_lbl), run_time=2.0)
+        self.play(Create(llm_curve), Create(uniform_curve), run_time=2.0)
+        self.play(Create(safety_card), run_time=2.0)
+        self.wait(30.0) # Accumulate to 135.0s
+
+        # =========================================================================
+        # PHASE 4: CHAPTER 2 INTRODUCTION TRANSITION (135.0s - 180.0s)
+        # =========================================================================
+        self.play(
+            FadeOut(graph_axes), FadeOut(graph_lbl),
+            FadeOut(llm_curve), FadeOut(uniform_curve),
+            FadeOut(safety_card),
+            run_time=1.5
+        )
+
+        learned_env_lbl = Tex(r"\text{Bước chuyển tất yếu: Dịch chuyển sang các Môi trường Tự học được (Learned Simulators)}", color=WHITE).scale(0.8)
+        self.play(Write(learned_env_lbl), run_time=2.0)
+        self.wait(10.0) # Accumulate to 148.5s
+        
+        # Final Chapter Title transition
+        ch2_title = Tex(r"\text{\textbf{02. Foundation World Models}}", color=GOLD).scale(1.3)
+        self.play(ReplacementTransform(learned_env_lbl, ch2_title), run_time=2.5)
+        self.wait(27.5) # Wait to finish total 180 seconds
+        
+        self.play(FadeOut(ch2_title), FadeOut(title), run_time=1.5)
