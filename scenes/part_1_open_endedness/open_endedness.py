@@ -2494,77 +2494,12 @@ class SC_04_TheIllusionOfGoals(VietnameseScene):
             dot.move_to(local_point + RIGHT * 0.065 * np.sin(dot.phase) + UP * 0.025 * np.sin(dot.phase * 1.7))
 
         trapped_agent.add_updater(trapped_wobble)
-        self.wait(34.5)
+        self.wait(74.0)
 
         # =========================================================================
-        # PHASE 2: FOG OF UNCERTAINTY CLEARING (45.0s - 100.0s)
+        # PHASE 2: STEPPING STONES (85.0s - 142.0s)
         # =========================================================================
         trapped_agent.clear_updaters()
-        self.play(FadeOut(warning), FadeOut(descent_arrow), run_time=0.8)
-
-        fog_title = make_label("Sương mù bế tắc: mục tiêu thật bị che khuất", GOLD, 0.58)
-        fog_title.next_to(title, DOWN, buff=0.24)
-        fog_bands = VGroup()
-        for i, x in enumerate(np.linspace(5.0, 9.5, 8)):
-            band = Rectangle(
-                width=0.78,
-                height=4.70,
-                stroke_width=0,
-                fill_color=interpolate_color(ManimColor(GRAY_E), ManimColor(BLUE_E), i / 8),
-                fill_opacity=0.78,
-            ).move_to(axes.c2p(x, 1.10))
-            band.base_opacity = 0.78 - i * 0.035
-            fog_bands.add(band)
-
-        exploration_agent = Dot(local_point, color=ORANGE, radius=0.115)
-        exploration_path = VMobject(color=GOLD, stroke_width=2.4, stroke_opacity=0.82)
-        path_points = [
-            axes.c2p(local_x, objective_curve(local_x)),
-            axes.c2p(3.55, objective_curve(3.55) + 0.55),
-            axes.c2p(4.75, objective_curve(4.75) + 0.15),
-            axes.c2p(6.30, objective_curve(6.30) + 0.42),
-            global_point,
-        ]
-        exploration_path.set_points_smoothly(path_points)
-        fog_agent_tracker = ValueTracker(local_x)
-
-        def fog_clear_updater(group, dt):
-            frontier_x = fog_agent_tracker.get_value() + 0.45
-            for band in group:
-                band_x = axes.p2c(band.get_center())[0]
-                fade = np.clip((frontier_x - band_x + 0.9) / 1.6, 0.0, 1.0)
-                band.set_fill(opacity=band.base_opacity * (1.0 - fade))
-
-        fog_bands.add_updater(fog_clear_updater)
-        self.play(
-            Transform(phase1_title, fog_title),
-            FadeIn(fog_bands),
-            FadeOut(trapped_agent),
-            FadeIn(exploration_agent),
-            run_time=1.2,
-        )
-        self.play(Create(exploration_path), run_time=1.6)
-
-        self.play(
-            MoveAlongPath(exploration_agent, exploration_path),
-            fog_agent_tracker.animate.set_value(global_x),
-            global_marker.animate.set_color(GREEN_C),
-            run_time=7.0,
-            rate_func=smooth,
-        )
-        revealed_note = make_text_block(
-            ["Đi ngang qua vùng mới lạ mở rộng bản đồ.", "Không phải bước nào cũng tăng điểm ngay lập tức."],
-            color=GOLD,
-            scale=0.44,
-            buff=0.10,
-        ).to_edge(DOWN, buff=0.42)
-        self.play(LaggedStart(*[Write(line) for line in revealed_note], lag_ratio=0.12), run_time=1.4)
-        self.wait(41.8)
-
-        # =========================================================================
-        # PHASE 3: STEPPING STONES (100.0s - 180.0s)
-        # =========================================================================
-        fog_bands.clear_updaters()
         self.play(
             FadeOut(phase1_title),
             FadeOut(axes),
@@ -2575,10 +2510,9 @@ class SC_04_TheIllusionOfGoals(VietnameseScene):
             FadeOut(local_lbl),
             FadeOut(global_marker),
             FadeOut(global_lbl),
-            FadeOut(fog_bands),
-            FadeOut(exploration_agent),
-            FadeOut(exploration_path),
-            FadeOut(revealed_note),
+            FadeOut(warning),
+            FadeOut(descent_arrow),
+            FadeOut(trapped_agent),
             run_time=1.2,
         )
 
@@ -2629,8 +2563,11 @@ class SC_04_TheIllusionOfGoals(VietnameseScene):
         self.play(glow_ring.animate.scale(2.6).set_stroke(opacity=0), run_time=1.1)
         self.remove(glow_ring)
         self.play(LaggedStart(*[FadeIn(line, shift=UP * 0.08) for line in nonlinear_message], lag_ratio=0.12), run_time=1.5)
-        self.wait(71.4)
+        self.wait(49.9)
 
+        # =========================================================================
+        # PHASE 3: FOG OF UNCERTAINTY CLEARING (142.0s - 204.4s)
+        # =========================================================================
         self.play(
             FadeOut(concept_title),
             FadeOut(card1),
@@ -2638,6 +2575,117 @@ class SC_04_TheIllusionOfGoals(VietnameseScene):
             FadeOut(bridge),
             FadeOut(bridge_label),
             FadeOut(nonlinear_message),
+            run_time=1.2,
+        )
+
+        fog_title = make_label("Sương mù bế tắc: mục tiêu thật bị che khuất", GOLD, 0.58)
+        fog_title.next_to(title, DOWN, buff=0.24)
+
+        axes = Axes(
+            x_range=[0, 10, 1],
+            y_range=[-1.6, 4.0, 1],
+            x_length=10.8,
+            y_length=4.15,
+            axis_config={"color": GRAY_B, "stroke_width": 1.0, "stroke_opacity": 0.55},
+            tips=False,
+        ).shift(DOWN * 0.52)
+        grid = VGroup()
+        for x in np.arange(1, 10, 1):
+            grid.add(Line(axes.c2p(x, -1.6), axes.c2p(x, 4.0), color=GRAY_B, stroke_width=0.55, stroke_opacity=0.13))
+        for y in np.arange(-1, 4, 1):
+            grid.add(Line(axes.c2p(0, y), axes.c2p(10, y), color=GRAY_B, stroke_width=0.55, stroke_opacity=0.13))
+        terrain = axes.plot(objective_curve, x_range=[0.15, 9.85], color=GRAY_A, stroke_width=3.0)
+
+        local_point = axes.c2p(local_x, objective_curve(local_x))
+        global_point = axes.c2p(global_x, objective_curve(global_x))
+        local_marker = VGroup(
+            Dot(local_point, radius=0.09, color=RED),
+            Circle(radius=0.32, color=RED, stroke_width=1.4, stroke_opacity=0.55).move_to(local_point),
+        )
+        global_marker = VGroup(
+            Dot(global_point, radius=0.09, color=GREEN_C),
+            Circle(radius=0.38, color=GREEN_C, stroke_width=1.4, stroke_opacity=0.58).move_to(global_point),
+        )
+        local_lbl = make_label("Local Minimum", RED, 0.45).next_to(local_marker, DOWN, buff=0.18)
+        global_lbl = make_label("Global Optimum", GREEN_C, 0.45).next_to(global_marker, DOWN, buff=0.18)
+
+        fog_bands = VGroup()
+        for i, x in enumerate(np.linspace(5.0, 9.5, 8)):
+            band = Rectangle(
+                width=0.78,
+                height=4.70,
+                stroke_width=0,
+                fill_color=interpolate_color(ManimColor(GRAY_E), ManimColor(BLUE_E), i / 8),
+                fill_opacity=0.78,
+            ).move_to(axes.c2p(x, 1.10))
+            band.base_opacity = 0.78 - i * 0.035
+            fog_bands.add(band)
+
+        exploration_agent = Dot(local_point, color=ORANGE, radius=0.115)
+        exploration_path = VMobject(color=GOLD, stroke_width=2.4, stroke_opacity=0.82)
+        path_points = [
+            axes.c2p(local_x, objective_curve(local_x)),
+            axes.c2p(3.55, objective_curve(3.55) + 0.55),
+            axes.c2p(4.75, objective_curve(4.75) + 0.15),
+            axes.c2p(6.30, objective_curve(6.30) + 0.42),
+            global_point,
+        ]
+        exploration_path.set_points_smoothly(path_points)
+        fog_agent_tracker = ValueTracker(local_x)
+
+        def fog_clear_updater(group, dt):
+            frontier_x = fog_agent_tracker.get_value() + 0.45
+            for band in group:
+                band_x = axes.p2c(band.get_center())[0]
+                fade = np.clip((frontier_x - band_x + 0.9) / 1.6, 0.0, 1.0)
+                band.set_fill(opacity=band.base_opacity * (1.0 - fade))
+
+        fog_bands.add_updater(fog_clear_updater)
+        self.play(
+            FadeIn(fog_title, shift=DOWN * 0.10),
+            Create(grid),
+            Create(axes),
+            Create(terrain),
+            FadeIn(local_marker),
+            Write(local_lbl),
+            FadeIn(global_marker),
+            Write(global_lbl),
+            FadeIn(fog_bands),
+            FadeIn(exploration_agent),
+            run_time=2.2,
+        )
+        self.play(Create(exploration_path), run_time=1.6)
+
+        self.play(
+            MoveAlongPath(exploration_agent, exploration_path),
+            fog_agent_tracker.animate.set_value(global_x),
+            global_marker.animate.set_color(GREEN_C),
+            run_time=7.0,
+            rate_func=smooth,
+        )
+        revealed_note = make_text_block(
+            ["Đi ngang qua vùng mới lạ mở rộng bản đồ.", "Không phải bước nào cũng tăng điểm ngay lập tức."],
+            color=GOLD,
+            scale=0.44,
+            buff=0.10,
+        ).to_edge(DOWN, buff=0.42)
+        self.play(LaggedStart(*[Write(line) for line in revealed_note], lag_ratio=0.12), run_time=1.4)
+        self.wait(47.5)
+
+        fog_bands.clear_updaters()
+        self.play(
+            FadeOut(fog_title),
+            FadeOut(axes),
+            FadeOut(grid),
+            FadeOut(terrain),
+            FadeOut(local_marker),
+            FadeOut(local_lbl),
+            FadeOut(global_marker),
+            FadeOut(global_lbl),
+            FadeOut(fog_bands),
+            FadeOut(exploration_agent),
+            FadeOut(exploration_path),
+            FadeOut(revealed_note),
             FadeOut(title),
             run_time=1.5,
         )
