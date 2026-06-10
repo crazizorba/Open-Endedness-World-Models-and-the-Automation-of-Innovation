@@ -2,6 +2,7 @@ from manim import *
 import numpy as np
 import os
 import random
+import re
 # Set default TexTemplate to support Vietnamese using XeLaTeX
 vietnamese_template = TexTemplate(tex_compiler="xelatex", output_format=".xdv")
 vietnamese_template.add_to_preamble(r"\usepackage{xcolor}")
@@ -92,6 +93,7 @@ def create_title_banner(title_text, color=GOLD):
     """
     Creates a standardized title banner with an underline separator.
     """
+    title_text = re.sub(r"^\s*(?:SC\\?_?\d{2}|Phase\s*\d{1,2})\s*[:\-–—]\s*", "", title_text)
     title = Tex(rf"\text{{\textbf{{{title_text}}}}}", color=color).scale(0.9)
     underline = Line(start=LEFT * 6.5, end=RIGHT * 6.5, color=GRAY, stroke_width=1.5)
     banner = VGroup(title, underline).arrange(DOWN, buff=0.15).to_edge(UP, buff=0.5)
@@ -468,7 +470,7 @@ class SC_01_TheHorizonOfAGI(VietnameseScene):
     def construct(self):
         load_safe_sound(self, "SC_01_ParadigmShift.wav")
 
-        title = create_title_banner(r"SC\_01: The Horizon of AGI \& The Paradigm Shift")
+        title = create_title_banner(r"The Horizon of AGI \& The Paradigm Shift")
         title.scale(0.88).to_edge(UP, buff=0.35)
         self.play(FadeIn(title, shift=DOWN * 0.15), run_time=1.0)
 
@@ -508,7 +510,7 @@ class SC_01_TheHorizonOfAGI(VietnameseScene):
         # =========================================================================
         # PHASE 1: DATA SATURATION CHALLENGE (0.0s - 30.0s)
         # =========================================================================
-        phase1_title = make_label("Pha 1: Giới hạn của dữ liệu tĩnh", GOLD, 0.62)
+        phase1_title = make_label("Giới hạn của dữ liệu tĩnh", GOLD, 0.62)
         phase1_title.next_to(title, DOWN, buff=0.24)
 
         db_center = LEFT * 4.0 + DOWN * 0.25
@@ -659,7 +661,7 @@ class SC_01_TheHorizonOfAGI(VietnameseScene):
         data_particles.add_updater(update_data_particles)
         neural_pulses.add_updater(update_neural_pulses)
         self.add(data_particles, neural_pulses)
-        self.wait(8.0)
+        self.wait(23.6)
 
         data_particles.clear_updaters()
         neural_pulses.clear_updaters()
@@ -705,7 +707,7 @@ class SC_01_TheHorizonOfAGI(VietnameseScene):
             LaggedStart(*[Write(line) for line in warning_lines], lag_ratio=0.18),
             run_time=2.2,
         )
-        self.wait(16.0)
+        self.wait(21.8)
 
         # =========================================================================
         # PHASE 2: ERA OF EXPERIENCE INTRODUCTION (30.0s - 70.0s)
@@ -746,12 +748,12 @@ class SC_01_TheHorizonOfAGI(VietnameseScene):
 
         self.play(FadeIn(card, shift=UP * 0.12), FadeIn(quote_left), FadeIn(quote_right), run_time=1.4)
         self.play(Write(question), Create(question_underline), run_time=1.8)
-        self.wait(8.5)
+        self.wait(18.8)
         self.play(
             LaggedStart(*[FadeIn(line, shift=UP * 0.12) for line in quote_lines], lag_ratio=0.22),
             run_time=2.6,
         )
-        self.wait(25.7)
+        self.wait(25.4)
 
         # =========================================================================
         # PHASE 3: Watts' ORGANISM-ENVIRONMENT MUTUALITY (70.0s - 110.0s)
@@ -885,7 +887,7 @@ class SC_01_TheHorizonOfAGI(VietnameseScene):
             Write(env_label),
             run_time=2.8,
         )
-        self.wait(8.8)
+        self.wait(5.9)
         self.play(
             Create(grows_arc),
             Create(creates_arc),
@@ -894,10 +896,10 @@ class SC_01_TheHorizonOfAGI(VietnameseScene):
             run_time=2.0,
         )
         self.add(grows_pulse, creates_pulse)
-        self.wait(25.1)
+        self.wait(28.0)
 
         # =========================================================================
-        # PHASE 4: NON-LINEAR TECHNOLOGICAL PROGRESS (110.0s - 180.0s)
+        # PHASE 4: TRANSITION TO PETRI DISH (110.0s - 180.0s)
         # =========================================================================
         electron_a.clear_updaters()
         electron_b.clear_updaters()
@@ -919,137 +921,62 @@ class SC_01_TheHorizonOfAGI(VietnameseScene):
             run_time=1.4,
         )
 
-        phase4_title = make_label("Tiến bộ mở không đi theo đường thẳng", GOLD, 0.70)
+        phase4_title = make_label("Hướng tới Mô hình Tiến hóa Tự thân", GOLD, 0.70)
         phase4_title.next_to(title, DOWN, buff=0.26)
 
-        left_card = glass_card(4.75, 3.45, BLUE_C, center=LEFT * 2.85 + DOWN * 0.35, fill_opacity=0.08)
-        right_card = glass_card(4.75, 3.45, ORANGE, center=RIGHT * 2.85 + DOWN * 0.35, fill_opacity=0.08)
+        center_card = glass_card(7.6, 4.35, GOLD, center=DOWN * 0.20, fill_opacity=0.08)
+        card_box = center_card[0]
+        
+        card_title_p4 = make_label("Mô Hình Tư Duy: Chiếc Đĩa Petri", GOLD, 0.60).next_to(card_box.get_top(), DOWN, buff=0.36)
+        card_subtitle_p4 = make_label("Hệ thống tự vận hành \\& tự sinh dữ liệu tiến hóa", GRAY_A, 0.45).next_to(card_title_p4, DOWN, buff=0.15)
+        
+        outer_ring = Circle(radius=0.98, color=BLUE_C, stroke_width=1.8, stroke_opacity=0.60).move_to(card_box.get_center() + DOWN * 0.65)
+        inner_ring = Circle(radius=0.90, color=BLUE_D, stroke_width=1.0, stroke_opacity=0.30).move_to(outer_ring.get_center())
+        
+        cells = VGroup()
+        cell_positions = [LEFT * 0.35 + UP * 0.22, RIGHT * 0.25 + UP * 0.32, LEFT * 0.12 - DOWN * 0.22, RIGHT * 0.35 - DOWN * 0.12]
+        for pos in cell_positions:
+            cell = Circle(radius=0.09, color=GREEN_C, fill_color=GREEN_D, fill_opacity=0.50, stroke_width=0.8).move_to(outer_ring.get_center() + pos)
+            cells.add(cell)
 
-        left_card_box = left_card[0]
-        right_card_box = right_card[0]
-        vacuum_title = make_label("Ống chân không", BLUE_C, 0.60).next_to(left_card_box.get_top(), DOWN, buff=0.30)
-        vacuum_year = make_label("1900s", GRAY_A, 0.45).next_to(vacuum_title, DOWN, buff=0.12)
-        eniac_title = make_label("Máy tính ENIAC", ORANGE, 0.60).next_to(right_card_box.get_top(), DOWN, buff=0.30)
-        eniac_year = make_label("1940s", GRAY_A, 0.45).next_to(eniac_title, DOWN, buff=0.12)
-
-        bulb_glow = Circle(radius=0.48, color=GOLD, stroke_width=1.0, stroke_opacity=0.18).move_to(left_card_box.get_center() + DOWN * 0.10)
-        bulb = Circle(radius=0.34, color=GOLD, fill_color=GOLD_E, fill_opacity=0.16, stroke_width=1.8).move_to(bulb_glow.get_center() + UP * 0.12)
-        filament = VMobject(color=GOLD, stroke_width=2.2)
-        filament.set_points_smoothly([
-            bulb.get_center() + LEFT * 0.16 + DOWN * 0.02,
-            bulb.get_center() + LEFT * 0.08 + UP * 0.08,
-            bulb.get_center() + RIGHT * 0.02 + DOWN * 0.02,
-            bulb.get_center() + RIGHT * 0.12 + UP * 0.08,
-            bulb.get_center() + RIGHT * 0.18 + DOWN * 0.02,
-        ])
-        bulb_base = VGroup(
-            Rectangle(width=0.42, height=0.16, color=GRAY_A, fill_color=GRAY_E, fill_opacity=0.82, stroke_width=1.0),
-            Rectangle(width=0.30, height=0.18, color=GRAY_A, fill_color=GRAY_E, fill_opacity=0.82, stroke_width=1.0),
-        ).arrange(DOWN, buff=0.02).next_to(bulb, DOWN, buff=0.02)
-        vacuum_icon = VGroup(bulb_glow, bulb, filament, bulb_base)
-
-        chip = RoundedRectangle(
-            width=1.46,
-            height=1.06,
-            corner_radius=0.06,
-            color=ORANGE,
-            fill_color=GRAY_E,
-            fill_opacity=0.75,
-            stroke_width=1.4,
-        ).move_to(right_card_box.get_center() + DOWN * 0.04)
-        circuit_lines = VGroup()
-        for idx, y in enumerate(np.linspace(-0.34, 0.34, 4)):
-            circuit_lines.add(Line(
-                chip.get_left() + RIGHT * 0.18 + UP * y,
-                chip.get_right() + LEFT * 0.18 + UP * y,
-                color=GOLD if idx % 2 == 0 else ORANGE,
-                stroke_width=1.2,
-                stroke_opacity=0.72,
-            ))
-        for idx, x in enumerate(np.linspace(-0.48, 0.48, 4)):
-            circuit_lines.add(Line(
-                chip.get_bottom() + UP * 0.15 + RIGHT * x,
-                chip.get_top() + DOWN * 0.15 + RIGHT * x,
-                color=ORANGE if idx % 2 == 0 else GOLD,
-                stroke_width=1.0,
-                stroke_opacity=0.58,
-            ))
-        pins = VGroup()
-        for side in [UP, DOWN]:
-            for x in np.linspace(-0.52, 0.52, 5):
-                pins.add(Line(
-                    chip.get_center() + RIGHT * x + side * 0.53,
-                    chip.get_center() + RIGHT * x + side * 0.72,
-                    color=GRAY_A,
-                    stroke_width=1.0,
-                    stroke_opacity=0.58,
-                ))
-        eniac_icon = VGroup(chip, circuit_lines, pins)
-
-        straight_arrow = Arrow(
-            left_card_box.get_right() + RIGHT * 0.10,
-            right_card_box.get_left() + LEFT * 0.10,
-            color=GRAY_B,
-            stroke_width=2.0,
-            buff=0.18,
-            max_tip_length_to_length_ratio=0.12,
-        ).set_opacity(0.35)
-        nonlinear_arc = ArcBetweenPoints(
-            left_card_box.get_top() + RIGHT * 0.35,
-            right_card_box.get_top() + LEFT * 0.35,
-            angle=-TAU / 5,
-            color=GOLD,
-            stroke_width=3.0,
-        ).add_tip(tip_length=0.18, tip_width=0.12)
-        arc_label = make_label("Stepping stone", GOLD, 0.46).next_to(nonlinear_arc, UP, buff=0.18)
-
-        claim_lines = VGroup(
-            make_label("Một bước đệm hữu ích hôm nay", GRAY_A, 0.52),
-            make_label("có thể mở ra một chiều công nghệ hoàn toàn mới.", GRAY_A, 0.52),
-            make_label("Đó là tiến bộ phi tuyến tính.", GOLD, 0.58),
-        ).arrange(DOWN, buff=0.14).to_edge(DOWN, buff=0.54)
+        # Add updaters
+        for idx, cell in enumerate(cells):
+            cell.time_accum = idx * 1.5
+            def make_wiggle_updater(c_idx=idx):
+                def wiggle_updater(c, dt):
+                    c.time_accum += dt * 3.8
+                    c.shift(np.array([np.sin(c.time_accum) * 0.0025, np.cos(c.time_accum * 0.8) * 0.0025, 0]))
+                return wiggle_updater
+            cell.add_updater(make_wiggle_updater(idx))
 
         self.play(
             FadeIn(phase4_title, shift=DOWN * 0.1),
-            FadeIn(left_card, shift=RIGHT * 0.12),
-            FadeIn(right_card, shift=LEFT * 0.12),
-            run_time=1.6,
+            FadeIn(center_card, shift=UP * 0.12),
+            run_time=1.5,
         )
         self.play(
-            LaggedStart(Write(vacuum_title), FadeIn(vacuum_year), Create(vacuum_icon), lag_ratio=0.18),
-            LaggedStart(Write(eniac_title), FadeIn(eniac_year), Create(eniac_icon), lag_ratio=0.18),
-            run_time=2.5,
+            Write(card_title_p4),
+            FadeIn(card_subtitle_p4),
+            Create(outer_ring),
+            Create(inner_ring),
+            LaggedStart(*[FadeIn(cell) for cell in cells], lag_ratio=0.18),
+            run_time=2.2,
         )
-        self.play(Create(straight_arrow), run_time=1.0)
-        cross_center = straight_arrow.get_center()
-        cross = VGroup(
-            Line(cross_center + LEFT * 0.20 + UP * 0.20, cross_center + RIGHT * 0.20 + DOWN * 0.20, color=RED, stroke_width=3.2),
-            Line(cross_center + LEFT * 0.20 + DOWN * 0.20, cross_center + RIGHT * 0.20 + UP * 0.20, color=RED, stroke_width=3.2),
-        )
-        self.play(Create(cross), straight_arrow.animate.set_opacity(0.16), run_time=0.8)
-        self.play(Create(nonlinear_arc), FadeIn(arc_label, shift=DOWN * 0.08), run_time=1.5)
+        
+        self.wait(22.34)
 
-        glow_ring = Circle(radius=0.42, color=GOLD, stroke_width=2.0).move_to(bulb.get_center())
-        self.play(glow_ring.animate.scale(2.25).set_stroke(opacity=0), run_time=1.2)
-        self.remove(glow_ring)
-        self.play(LaggedStart(*[FadeIn(line, shift=UP * 0.10) for line in claim_lines], lag_ratio=0.20), run_time=2.2)
-        self.wait(57.8)
+        # Clean up updaters
+        for cell in cells:
+            cell.clear_updaters()
 
         ending_group = VGroup(
             phase4_title,
-            left_card,
-            right_card,
-            vacuum_title,
-            vacuum_year,
-            eniac_title,
-            eniac_year,
-            vacuum_icon,
-            eniac_icon,
-            straight_arrow,
-            cross,
-            nonlinear_arc,
-            arc_label,
-            claim_lines,
+            center_card,
+            card_title_p4,
+            card_subtitle_p4,
+            outer_ring,
+            inner_ring,
+            cells,
             title,
         )
         self.play(FadeOut(ending_group), run_time=1.4)
@@ -1062,7 +989,7 @@ class SC_02_TheMetaphorOfThePetriDish(VietnameseMovingCameraScene):
     """
     def construct(self):
         load_safe_sound(self, "SC_02_PetriDish.wav")
-        title = create_title_banner(r"SC\_02: The Metaphor of the Petri Dish")
+        title = create_title_banner(r"The Metaphor of the Petri Dish")
         title.scale(0.88).to_edge(UP, buff=0.35)
         self.play(FadeIn(title, shift=DOWN * 0.12), run_time=1.0)
 
@@ -1225,7 +1152,7 @@ class SC_02_TheMetaphorOfThePetriDish(VietnameseMovingCameraScene):
             FadeIn(phase1_note, shift=UP * 0.08),
             run_time=2.4,
         )
-        self.wait(8.6)
+        self.wait(32.6)
 
         bolt_starts = [
             glass_outer.point_at_angle(PI * 0.20),
@@ -1278,7 +1205,7 @@ class SC_02_TheMetaphorOfThePetriDish(VietnameseMovingCameraScene):
             Write(mutation_label),
             run_time=1.4,
         )
-        self.wait(26.0)
+        self.wait(11.75)
 
         self.play(FadeOut(phase1_note), FadeOut(mutation_label), run_time=0.8)
 
@@ -1290,7 +1217,7 @@ class SC_02_TheMetaphorOfThePetriDish(VietnameseMovingCameraScene):
             run_time=2.6,
             rate_func=smooth,
         )
-        self.wait(4.4)
+        self.wait(7.4)
 
         city_label = VGroup(
             Tex(r"\text{Tiến hóa Sinh học}", color=GREEN_C).scale(0.32),
@@ -1316,6 +1243,22 @@ class SC_02_TheMetaphorOfThePetriDish(VietnameseMovingCameraScene):
                 stroke_width=1.2,
                 stroke_opacity=0.92,
             ).move_to(dish_center + RIGHT * x + UP * (city_base_y - dish_center[1] + height / 2))
+            
+            # Windows detail
+            windows = VGroup()
+            num_floors = max(2, int(height / 0.15))
+            for f in range(num_floors):
+                y_pos = building.get_bottom()[1] + 0.08 + f * 0.14
+                if y_pos < building.get_top()[1] - 0.06:
+                    for x_offset in [-width * 0.25, width * 0.25]:
+                        window = Dot(
+                            point=np.array([building.get_center()[0] + x_offset, y_pos, 0.0]),
+                            radius=0.015,
+                            color=random.choice([YELLOW, GOLD, WHITE]),
+                            fill_opacity=0.72,
+                        )
+                        windows.add(window)
+                        
             if idx in [3, 5, 7]:
                 spire = Triangle(
                     color=GOLD,
@@ -1323,9 +1266,9 @@ class SC_02_TheMetaphorOfThePetriDish(VietnameseMovingCameraScene):
                     fill_opacity=0.34,
                     stroke_width=1.0,
                 ).scale(0.12).next_to(building, UP, buff=0.00)
-                buildings.add(VGroup(building, spire))
+                buildings.add(VGroup(building, windows, spire))
             else:
-                buildings.add(building)
+                buildings.add(VGroup(building, windows))
 
         roads = VGroup()
         city_nodes = VGroup()
@@ -1385,7 +1328,7 @@ class SC_02_TheMetaphorOfThePetriDish(VietnameseMovingCameraScene):
         )
         self.add(city_pulses)
         self.play(city_glow.animate.scale(1.08).set_stroke(opacity=0.05), run_time=1.0, rate_func=there_and_back)
-        self.wait(28.2)
+        self.wait(35.4)
 
         # =========================================================================
         # PHASE 3: CONTRAST WITH CLOSED AI SYSTEMS (80.0s - 120.0s)
@@ -1537,7 +1480,7 @@ class SC_02_TheMetaphorOfThePetriDish(VietnameseMovingCameraScene):
             run_time=2.6,
             rate_func=smooth,
         )
-        self.wait(31.0)
+        self.wait(34.88)
 
         open_cells.clear_updaters()
         self.play(
@@ -1567,7 +1510,7 @@ class SC_03_DeconstructingOpenEndedSystems(VietnameseScene):
     """
     def construct(self):
         load_safe_sound(self, "SC_03_ObserverVenn.wav")
-        title = create_title_banner(r"SC\_03: Deconstructing Open-Ended Systems")
+        title = create_title_banner(r"Deconstructing Open-Ended Systems")
         title.scale(0.88).to_edge(UP, buff=0.35)
         self.play(FadeIn(title, shift=DOWN * 0.12), run_time=1.0)
 
@@ -1584,6 +1527,35 @@ class SC_03_DeconstructingOpenEndedSystems(VietnameseScene):
             else:
                 group.arrange(DOWN, buff=buff, aligned_edge=aligned_edge)
             return group
+
+        def make_chip(text, color=WHITE, scale=0.34, min_width=1.60):
+            label = make_label(text, color, scale)
+            box = RoundedRectangle(
+                width=max(min_width, label.width + 0.34),
+                height=max(0.36, label.height + 0.16),
+                corner_radius=0.08,
+                color=color,
+                fill_color=BLACK,
+                fill_opacity=0.70,
+                stroke_width=1.0,
+                stroke_opacity=0.70,
+            )
+            label.move_to(box)
+            return VGroup(box, label)
+
+        def add_artifacts_wiggle(group, speed=1.2, amp=0.08):
+            for idx, item in enumerate(group):
+                item.orig_pos = np.array(item.get_center())
+                item.phase = idx * 0.5
+            def update(g, dt):
+                for item in g:
+                    item.phase += dt * speed
+                    item.move_to(item.orig_pos + np.array([
+                        np.sin(item.phase),
+                        np.cos(item.phase * 1.3),
+                        0.0
+                    ]) * amp)
+            group.add_updater(update)
 
         def make_eye(center=ORIGIN):
             upper = CubicBezier(
@@ -1820,7 +1792,74 @@ class SC_03_DeconstructingOpenEndedSystems(VietnameseScene):
             LaggedStart(*[Write(line) for line in standish_text], lag_ratio=0.18),
             run_time=2.4,
         )
-        self.wait(33.45)
+        observer_chip_1 = make_chip("không phải thuộc tính cô lập", GOLD, 0.34, 2.65).next_to(standish_card, UP, buff=0.18).shift(LEFT * 2.45)
+        observer_chip_2 = make_chip("phụ thuộc góc nhìn", BLUE_C, 0.34, 2.05).next_to(standish_card, UP, buff=0.18).shift(RIGHT * 2.45)
+        observer_chip_3 = make_chip("bộ lọc nhận thức", GOLD, 0.34, 1.90).next_to(standish_card, DOWN, buff=0.18)
+        filter_ring = Circle(radius=0.72, color=GOLD, stroke_width=2.0, stroke_opacity=0.44).move_to(eye_center)
+        observer_particles = VGroup()
+        for index in range(8):
+            particle = Dot(radius=0.032, color=GOLD if index % 2 == 0 else BLUE_C, fill_opacity=0.78)
+            particle.phase = index / 8
+            observer_particles.add(particle)
+
+        def update_observer_particles(group, dt):
+            for index, particle in enumerate(group):
+                particle.phase = (particle.phase + dt * (0.075 + 0.010 * (index % 3))) % 1.0
+                angle = TAU * particle.phase
+                particle.move_to(
+                    eye_center
+                    + RIGHT * np.cos(angle) * (2.28 + 0.05 * np.sin(self.time + index))
+                    + UP * np.sin(angle) * 0.74
+                )
+                particle.set_opacity(0.28 + 0.50 * (0.5 + 0.5 * np.sin(self.time * 2.0 + index)))
+
+        observer_particles.add_updater(update_observer_particles)
+        self.add(observer_particles)
+        self.play(
+            standish_card.animate.set_stroke(width=1.9, opacity=0.88),
+            rays.animate.set_stroke(opacity=0.42),
+            FadeIn(observer_chip_1, shift=UP * 0.08),
+            run_time=3.4,
+        )
+        self.play(
+            move_eye_focus(eye, eye_center, LEFT * 0.26, run_time=2.6),
+            FadeIn(filter_ring, scale=0.85),
+            run_time=2.6,
+        )
+        self.play(
+            FadeIn(observer_chip_2, shift=UP * 0.08),
+            filter_ring.animate.scale(1.35).set_opacity(0.18),
+            run_time=3.4,
+        )
+        self.play(
+            move_eye_focus(eye, eye_center, RIGHT * 0.24, run_time=2.6),
+            rays.animate.set_stroke(opacity=0.20),
+            run_time=2.6,
+        )
+        self.play(
+            FadeIn(observer_chip_3, shift=UP * 0.08),
+            standish_text.animate.set_color(GRAY_A),
+            run_time=3.3,
+        )
+        self.play(
+            standish_text.animate.set_color(WHITE),
+            standish_card.animate.set_fill(opacity=0.44),
+            run_time=3.0,
+        )
+        self.play(
+            move_eye_focus(eye, eye_center, ORIGIN, run_time=2.4),
+            filter_ring.animate.scale(1 / 1.35).set_opacity(0.42),
+            run_time=2.4,
+        )
+        self.play(
+            FadeOut(observer_chip_1, shift=DOWN * 0.05),
+            FadeOut(observer_chip_2, shift=DOWN * 0.05),
+            FadeOut(observer_chip_3, shift=DOWN * 0.05),
+            standish_card.animate.set_fill(opacity=0.34).set_stroke(width=1.1, opacity=0.60),
+            run_time=3.3,
+        )
+        self.wait(15.05)
+        observer_particles.clear_updaters()
 
         # =========================================================================
         # PHASE 2: NOISY TV PARADOX (45.0s - 100.0s)
@@ -1831,6 +1870,8 @@ class SC_03_DeconstructingOpenEndedSystems(VietnameseScene):
             FadeOut(standish_card),
             FadeOut(standish_text),
             FadeOut(rays),
+            FadeOut(observer_particles),
+            FadeOut(filter_ring),
             run_time=1.0,
         )
 
@@ -1906,7 +1947,40 @@ class SC_03_DeconstructingOpenEndedSystems(VietnameseScene):
         )
         static_dots.add_updater(update_static)
         self.add(wave_phase)
-        self.wait(51.2)
+        novelty_only_chip = make_chip("Novelty cao, không học được", RED, 0.32, 2.60).next_to(tv, DOWN, buff=0.24)
+        learnability_only_chip = make_chip("Learnability cao, ít bất ngờ", BLUE_C, 0.32, 2.70).next_to(osc, DOWN, buff=0.24)
+        paradox_equation = MathTex(
+            r"\text{Novelty} \not\Rightarrow \text{Open-Endedness}",
+            color=GOLD,
+        ).scale(0.55).to_edge(DOWN, buff=0.42)
+        self.play(
+            FadeIn(novelty_only_chip, shift=UP * 0.08),
+            FadeIn(learnability_only_chip, shift=UP * 0.08),
+            run_time=3.0,
+        )
+        self.play(
+            tv_screen.animate.set_stroke(width=2.2, opacity=1.0),
+            noisy_title.animate.scale(1.08),
+            novelty_only_chip.animate.scale(1.05),
+            run_time=4.0,
+            rate_func=there_and_back,
+        )
+        self.play(
+            osc_screen.animate.set_stroke(width=2.2, opacity=1.0),
+            scope_title.animate.scale(1.08),
+            learnability_only_chip.animate.scale(1.05),
+            run_time=4.0,
+            rate_func=there_and_back,
+        )
+        self.play(Write(paradox_equation), run_time=3.2)
+        self.wait(22.0)
+        self.play(
+            FadeOut(novelty_only_chip, shift=DOWN * 0.06),
+            FadeOut(learnability_only_chip, shift=DOWN * 0.06),
+            FadeOut(paradox_equation, shift=DOWN * 0.06),
+            run_time=3.0,
+        )
+        self.wait(7.0)
 
         # =========================================================================
         # PHASE 3: VENN DIAGRAM & LOGIC EQUATION (100.0s - 180.0s)
@@ -2023,11 +2097,111 @@ class SC_03_DeconstructingOpenEndedSystems(VietnameseScene):
             LaggedStart(*[FadeIn(mob, scale=0.6) for mob in learnable_artifacts], lag_ratio=0.05),
             run_time=1.3,
         )
-        self.wait(61.7)
+        add_artifacts_wiggle(novelty_artifacts)
+        add_artifacts_wiggle(learnable_artifacts)
+        balanced_chip = make_chip("vừa mới lạ, vừa học được", GOLD, 0.36, 2.80).to_edge(DOWN, buff=0.44)
+        novelty_to_open = Arrow(
+            novelty_circle.get_center() + RIGHT * 0.10 + DOWN * 1.18,
+            intersection.get_center() + LEFT * 0.25 + DOWN * 0.70,
+            color=BLUE_C,
+            stroke_width=2.0,
+            max_tip_length_to_length_ratio=0.12,
+        )
+        learnable_to_open = Arrow(
+            learnability_circle.get_center() + LEFT * 0.10 + DOWN * 1.18,
+            intersection.get_center() + RIGHT * 0.25 + DOWN * 0.70,
+            color=GREEN_C,
+            stroke_width=2.0,
+            max_tip_length_to_length_ratio=0.12,
+        )
+        candidate_artifacts = VGroup()
+        candidate_paths = []
+        start_points = [
+            novelty_circle.get_center() + LEFT * 1.18 + UP * 1.05,
+            novelty_circle.get_center() + LEFT * 1.05 + DOWN * 0.95,
+            learnability_circle.get_center() + RIGHT * 1.18 + UP * 0.92,
+            learnability_circle.get_center() + RIGHT * 1.05 + DOWN * 0.88,
+            novelty_circle.get_center() + LEFT * 0.92 + UP * 0.18,
+            learnability_circle.get_center() + RIGHT * 0.92 + DOWN * 0.12,
+        ]
+        target_offsets = [UP * 0.55, DOWN * 0.54, LEFT * 0.18 + UP * 0.20, RIGHT * 0.18 + DOWN * 0.16, LEFT * 0.18 + DOWN * 0.20, RIGHT * 0.18 + UP * 0.20]
+        for index, start in enumerate(start_points):
+            artifact = RegularPolygon(
+                n=5 if index % 2 == 0 else 4,
+                radius=0.075,
+                color=GOLD,
+                fill_color=GOLD,
+                fill_opacity=0.62,
+                stroke_width=1.0,
+            ).move_to(start)
+            candidate_artifacts.add(artifact)
+            candidate_paths.append(ArcBetweenPoints(start, intersection.get_center() + target_offsets[index], angle=(-1) ** index * TAU / 7))
+
+        orbit_particles = VGroup()
+        for index in range(10):
+            particle = Dot(radius=0.030, color=GOLD, fill_opacity=0.72)
+            particle.phase = index / 10
+            orbit_particles.add(particle)
+
+        def update_intersection_orbit(group, dt):
+            for index, particle in enumerate(group):
+                particle.phase = (particle.phase + dt * (0.070 + 0.006 * (index % 4))) % 1.0
+                angle = TAU * particle.phase
+                particle.move_to(
+                    intersection.get_center()
+                    + RIGHT * np.cos(angle) * 0.72
+                    + UP * np.sin(angle) * 1.24
+                )
+                particle.set_opacity(0.25 + 0.55 * (0.5 + 0.5 * np.sin(self.time * 2.3 + index)))
+
+        self.play(FadeIn(balanced_chip, shift=UP * 0.08), run_time=3.0)
+        self.play(
+            novelty_circle.animate.set_stroke(width=4.0, opacity=1.0),
+            novelty_lbl.animate.scale(1.08),
+            run_time=3.5,
+            rate_func=there_and_back,
+        )
+        self.play(
+            learnability_circle.animate.set_stroke(width=4.0, opacity=1.0),
+            learnability_lbl.animate.scale(1.08),
+            run_time=3.5,
+            rate_func=there_and_back,
+        )
+        self.play(Create(novelty_to_open), Create(learnable_to_open), run_time=4.0)
+        self.play(FadeIn(candidate_artifacts, scale=0.75), run_time=1.2)
+        self.play(
+            LaggedStart(*[
+                MoveAlongPath(artifact, path)
+                for artifact, path in zip(candidate_artifacts, candidate_paths)
+            ], lag_ratio=0.10),
+            run_time=7.5,
+            rate_func=smooth,
+        )
+        self.play(
+            intersection_lbl.animate.scale(1.08),
+            intersection_glow.animate.set_stroke(width=8.0, opacity=0.30),
+            run_time=3.0,
+            rate_func=there_and_back,
+        )
+        orbit_particles.add_updater(update_intersection_orbit)
+        self.add(orbit_particles)
+        self.wait(35.0)
+        orbit_particles.clear_updaters()
+        self.play(
+            FadeOut(balanced_chip, shift=DOWN * 0.06),
+            FadeOut(novelty_to_open),
+            FadeOut(learnable_to_open),
+            FadeOut(candidate_artifacts, scale=0.90),
+            FadeOut(orbit_particles),
+            run_time=5.0,
+        )
+        self.wait(15.63)
 
         intersection.clear_updaters()
         intersection_glow.clear_updaters()
         pulse.clear_updaters()
+        novelty_artifacts.clear_updaters()
+        learnable_artifacts.clear_updaters()
         self.play(
             FadeOut(equation),
             FadeOut(novelty_circle),

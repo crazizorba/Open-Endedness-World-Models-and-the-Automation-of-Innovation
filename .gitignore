@@ -7,7 +7,7 @@
 media/
 videos/
 images/
-
+scenes/part_1_open_endedness/assets/*
 # Thư mục cache lưu trữ các trạng thái animation để tăng tốc render lần sau
 __pycache__/
 media/videos/**/cache/
