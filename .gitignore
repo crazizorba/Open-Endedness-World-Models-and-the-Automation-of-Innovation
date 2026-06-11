@@ -7,7 +7,6 @@
 media/
 videos/
 images/
-scenes/part_1_open_endedness/assets/*
 # Thư mục cache lưu trữ các trạng thái animation để tăng tốc render lần sau
 __pycache__/
 media/videos/**/cache/
@@ -15,7 +14,7 @@ media/videos/**/cache/
 
 # Các tệp cấu hình cục bộ của Manim nếu bạn tùy chỉnh riêng cho máy mình
 .manim.cfg
-
+scenes/part_1_open_endedness/assets/*
 # ==========================================
 # 2. LATEX & TEXT RENDER ARTIFACTS (File tạm từ LaTeX)
 # ==========================================

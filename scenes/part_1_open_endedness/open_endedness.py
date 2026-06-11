@@ -3446,11 +3446,11 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
     Premium implementation of LLM-driven semantic variation/selection, sample efficiency, AI Safety, and Chapter 2 transition.
     """
     def construct(self):
-        load_safe_sound(self, "SC_07_Evolutionary_Engines.wav")
-        title = create_title_banner(r"SC\_07: The Evolutionary Engines: Foundation Models")
+        load_safe_sound(self, "SC_07.wav")
+        title = create_title_banner(r"The Evolutionary Engines: Foundation Models")
         title.scale(0.90).to_edge(UP, buff=0.35)
         self.play(FadeIn(title, shift=DOWN * 0.12), run_time=1.0)
-        self.wait(0.5)
+        self.wait(1.0)
 
         def make_label(text, color=WHITE, scale=0.55):
             return Tex(rf"\text{{{text}}}", color=color).scale(scale)
@@ -3487,6 +3487,88 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
             )
             label.move_to(box)
             return VGroup(box, label)
+
+        def make_task_card(title, detail, color=ORANGE, width=2.18):
+            header = make_label(title, color, 0.31)
+            body = make_label(detail, GRAY_A, 0.23)
+            text = VGroup(header, body).arrange(DOWN, buff=0.04)
+            box = RoundedRectangle(
+                width=width,
+                height=0.58,
+                corner_radius=0.08,
+                color=color,
+                fill_color=BLACK,
+                fill_opacity=0.82,
+                stroke_width=1.1,
+                stroke_opacity=0.82,
+            )
+            text.move_to(box)
+            return VGroup(box, text)
+
+        def make_rock(center):
+            rock = Polygon(
+                LEFT * 0.16 + DOWN * 0.07,
+                LEFT * 0.05 + UP * 0.13,
+                RIGHT * 0.14 + UP * 0.08,
+                RIGHT * 0.18 + DOWN * 0.08,
+                DOWN * 0.16,
+                color=GRAY_A,
+                fill_color=GRAY_E,
+                fill_opacity=0.92,
+                stroke_width=1.1,
+            )
+            crack = Line(LEFT * 0.02 + UP * 0.09, RIGHT * 0.07 + DOWN * 0.07, color=BLUE_C, stroke_width=0.8, stroke_opacity=0.55)
+            return VGroup(rock, crack).move_to(center)
+
+        def make_axe(center):
+            handle = Line(DOWN * 0.23, UP * 0.18, color=GOLD, stroke_width=3.0, stroke_opacity=0.95)
+            blade = Polygon(
+                UP * 0.22,
+                RIGHT * 0.24 + UP * 0.06,
+                RIGHT * 0.05 + DOWN * 0.05,
+                LEFT * 0.02 + UP * 0.10,
+                color=ORANGE,
+                fill_color=ORANGE,
+                fill_opacity=0.82,
+                stroke_width=1.0,
+            )
+            return VGroup(handle, blade).rotate(-PI / 7).move_to(center)
+
+        def make_tent(center):
+            tent_body = Polygon(
+                LEFT * 0.34 + DOWN * 0.18,
+                UP * 0.26,
+                RIGHT * 0.34 + DOWN * 0.18,
+                color=GOLD,
+                fill_color=GOLD_E,
+                fill_opacity=0.62,
+                stroke_width=1.2,
+            )
+            door = Polygon(
+                DOWN * 0.18,
+                UP * 0.06,
+                RIGHT * 0.13 + DOWN * 0.18,
+                color=ORANGE,
+                fill_color=BLACK,
+                fill_opacity=0.72,
+                stroke_width=0.8,
+            )
+            return VGroup(tent_body, door).move_to(center)
+
+        def make_cube(center):
+            front = Square(side_length=0.34, color=BLUE_C, fill_color=BLUE_E, fill_opacity=0.28, stroke_width=1.1)
+            back = front.copy().shift(RIGHT * 0.12 + UP * 0.10).set_stroke(opacity=0.45)
+            connectors = VGroup(*[
+                Line(front.get_corner(corner), back.get_corner(corner), color=BLUE_C, stroke_width=0.8, stroke_opacity=0.42)
+                for corner in [UL, UR, DL, DR]
+            ])
+            return VGroup(back, connectors, front).move_to(center)
+
+        def make_portal(center):
+            outer = Circle(radius=0.30, color=GREEN_C, stroke_width=2.0, stroke_opacity=0.82)
+            inner = Circle(radius=0.18, color=BLUE_C, stroke_width=1.3, stroke_opacity=0.62)
+            gate_line = Line(DOWN * 0.30, UP * 0.30, color=GREEN_C, stroke_width=1.0, stroke_opacity=0.36)
+            return VGroup(outer, inner, gate_line).move_to(center)
 
         # =========================================================================
         # PHASE 1: CORE SYSTEM BLOCKS (0.0s - 45.0s)
@@ -3532,8 +3614,30 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
             Circle(radius=0.22, color=BLUE_C, stroke_width=2.0, stroke_opacity=0.55),
             Dot(radius=0.09, color=BLUE_C),
         ).move_to(sim_box.get_center() + DOWN * 0.36)
+        terrain_patch = Polygon(
+            floor_front_left + RIGHT * 0.38 + UP * 0.10,
+            floor_front_left + RIGHT * 1.02 + UP * 0.12,
+            floor_back_left + RIGHT * 0.55 + DOWN * 0.02,
+            floor_back_left + RIGHT * 0.18 + DOWN * 0.04,
+            color=GREEN_C,
+            fill_color=GREEN_E,
+            fill_opacity=0.14,
+            stroke_width=0.8,
+            stroke_opacity=0.40,
+        )
+        rock_obj = make_rock(sim_box.get_center() + LEFT * 0.75 + DOWN * 0.52)
+        axe_obj = make_axe(sim_box.get_center() + LEFT * 0.08 + DOWN * 0.40)
+        tent_obj = make_tent(sim_box.get_center() + RIGHT * 0.72 + DOWN * 0.40)
+        cube_obj = make_cube(sim_box.get_center() + LEFT * 1.05 + UP * 0.30)
+        portal_obj = make_portal(sim_box.get_center() + RIGHT * 1.15 + UP * 0.25)
+        goal_beacons = VGroup(
+            Dot(sim_box.get_center() + LEFT * 0.75 + DOWN * 0.18, radius=0.026, color=GOLD),
+            Dot(sim_box.get_center() + LEFT * 0.08 + DOWN * 0.08, radius=0.026, color=ORANGE),
+            Dot(sim_box.get_center() + RIGHT * 0.72 + DOWN * 0.08, radius=0.026, color=GREEN_C),
+        )
+        xland_objects = VGroup(terrain_patch, rock_obj, axe_obj, tent_obj, cube_obj, portal_obj, goal_beacons)
         sim_label = make_label("XLand simulation space", BLUE_C, 0.48).next_to(sim_box, DOWN, buff=0.16)
-        sim_group = VGroup(sim_box, floor_outline, perspective_grid, sim_agent, sim_label)
+        sim_group = VGroup(sim_box, floor_outline, perspective_grid, xland_objects, sim_agent, sim_label)
 
         llm_box = RoundedRectangle(
             width=4.25,
@@ -3591,9 +3695,28 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
             LaggedStart(*[FadeIn(layer, scale=0.75) for layer in nn_nodes], lag_ratio=0.08),
             FadeIn(llm_label, shift=DOWN * 0.08),
             FadeIn(llm_caption),
-            run_time=2.8,
+            run_time=2.5,
         )
+        self.wait(6.5) # 0.0s - 10.0s total
 
+        # =========================================================================
+        # 10.0s - 20.0s: Show XLand environment objects
+        # =========================================================================
+        self.play(
+            FadeIn(terrain_patch, shift=UP * 0.04),
+            FadeIn(rock_obj, scale=0.80),
+            FadeIn(axe_obj, scale=0.80),
+            FadeIn(tent_obj, scale=0.80),
+            FadeIn(cube_obj, scale=0.80),
+            FadeIn(portal_obj, scale=0.80),
+            FadeIn(goal_beacons),
+            run_time=2.0,
+        )
+        self.wait(8.0) # 10.0s - 20.0s total
+
+        # =========================================================================
+        # 20.0s - 30.0s: LLM Task Proposer highlight
+        # =========================================================================
         ripple_waves = VGroup()
         for index in range(3):
             wave = Circle(radius=0.42, color=ORANGE, stroke_width=2.0, stroke_opacity=0.0).move_to(llm_box)
@@ -3610,57 +3733,81 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
         ripple_waves.add_updater(update_ripples)
         self.add(ripple_waves)
 
-        phase1_note = make_chip("semantic proposal probes", GOLD, 0.34, min_width=2.50).to_edge(DOWN, buff=0.54)
-        proposal_path = Line(llm_box.get_left() + LEFT * 0.06, sim_box.get_right() + RIGHT * 0.06)
-        probe_packets = VGroup(*[
-            Dot(radius=0.055, color=GOLD if index % 2 == 0 else ORANGE, fill_opacity=0.88).move_to(proposal_path.get_start())
-            for index in range(5)
-        ])
         synapse_highlights = VGroup(*[
             line.copy().set_color(GOLD).set_stroke(width=1.25, opacity=0.70)
             for index, line in enumerate(synapses)
             if index % 7 == 0
         ])
-        focus_ring = Circle(radius=0.28, color=BLUE_C, stroke_width=2.0, stroke_opacity=0.72).move_to(sim_agent.get_center())
-        curriculum_hint = sequence_label(["đề xuất", "thử nghiệm", "phản hồi"], GOLD, 0.36).to_edge(DOWN, buff=0.56)
+        self.play(LaggedStart(*[FadeIn(line) for line in synapse_highlights], lag_ratio=0.025), run_time=2.0)
+        self.play(FadeOut(synapse_highlights), run_time=2.0)
+        self.wait(6.0) # 20.0s - 30.0s total
 
-        self.play(
-            FadeIn(phase1_note, shift=UP * 0.08),
-            llm_box.animate.set_stroke(width=2.7, opacity=1.0),
-            run_time=2.5,
-        )
+        # =========================================================================
+        # 30.0s - 45.0s: Signal/packet probes fly
+        # =========================================================================
+        phase1_note = make_chip("Dò tìm đề xuất ngữ nghĩa", GOLD, 0.34, min_width=2.50).to_edge(DOWN, buff=0.54)
+        proposal_path = Line(llm_box.get_left() + LEFT * 0.06, sim_box.get_right() + RIGHT * 0.06)
+        probe_packets = VGroup(*[
+            Dot(radius=0.055, color=GOLD if index % 2 == 0 else ORANGE, fill_opacity=0.88).move_to(proposal_path.get_start())
+            for index in range(5)
+        ])
+        self.play(FadeIn(phase1_note, shift=UP * 0.08), run_time=1.5)
         self.play(
             LaggedStart(*[MoveAlongPath(packet, proposal_path.copy()) for packet in probe_packets], lag_ratio=0.18),
-            run_time=5.5,
+            run_time=4.5,
         )
+        self.play(FadeOut(probe_packets), run_time=1.5)
+        self.wait(7.5) # 30.0s - 45.0s total
+
+        # =========================================================================
+        # 45.0s - 58.0s: Task cards: Collect stone, Craft tool, Build shelter
+        # =========================================================================
+        task_card_path = ArcBetweenPoints(llm_box.get_left() + LEFT * 0.08, sim_box.get_right() + RIGHT * 0.08, angle=TAU / 10)
+        phase1_tasks = [
+            ("Collect stone", "grounded object", rock_obj, BLUE_C),
+            ("Craft tool", "new affordance", axe_obj, ORANGE),
+            ("Build shelter", "long-horizon goal", tent_obj, GOLD),
+        ]
+        for title_text, detail_text, target_obj, target_color in phase1_tasks:
+            task_card = make_task_card(title_text, detail_text, target_color).move_to(llm_box.get_left() + LEFT * 0.34)
+            target_ring = Circle(radius=0.30, color=target_color, stroke_width=2.0, stroke_opacity=0.78).move_to(target_obj.get_center())
+            self.play(FadeIn(task_card, scale=0.85), run_time=0.30)
+            self.play(MoveAlongPath(task_card, task_card_path), run_time=1.40, rate_func=smooth)
+            self.play(
+                FadeOut(task_card, scale=0.90),
+                Create(target_ring),
+                run_time=0.60,
+            )
+            self.play(target_ring.animate.scale(1.55).set_opacity(0.0), run_time=0.70)
+            self.wait(1.33) # 45.0s - 58.0s total (approx 4.33s per task * 3 = 13.0s)
+
+        # =========================================================================
+        # 58.0s - 75.0s: Agent behavior & Affordance
+        # =========================================================================
+        focus_ring = Circle(radius=0.28, color=BLUE_C, stroke_width=2.0, stroke_opacity=0.72).move_to(sim_agent.get_center())
+        curriculum_hint = sequence_label(["đề xuất", "thử nghiệm", "phản hồi"], GOLD, 0.36).to_edge(DOWN, buff=0.56)
+        agent_motion_path = VMobject(color=BLUE_C, stroke_opacity=0.0)
+        agent_motion_path.set_points_smoothly([
+            sim_agent.get_center(),
+            sim_agent.get_center() + LEFT * 0.42 + UP * 0.18,
+            sim_agent.get_center() + RIGHT * 0.34 + UP * 0.34,
+            sim_agent.get_center() + RIGHT * 0.48 + DOWN * 0.10,
+        ])
+
+        self.play(Create(focus_ring), run_time=1.0)
+        self.play(focus_ring.animate.scale(1.85).set_opacity(0.0), run_time=2.0)
         self.play(
-            FadeOut(probe_packets),
-            sim_agent.animate.shift(LEFT * 0.34),
-            rate_func=there_and_back,
-            run_time=4.0,
+            MoveAlongPath(sim_agent, agent_motion_path),
+            run_time=6.0,
+            rate_func=smooth,
         )
-        self.play(
-            LaggedStart(*[FadeIn(line) for line in synapse_highlights], lag_ratio=0.025),
-            run_time=1.8,
-        )
-        self.play(FadeOut(synapse_highlights), run_time=2.4)
-        self.play(Create(focus_ring), run_time=0.8)
-        self.play(focus_ring.animate.scale(1.85).set_opacity(0.0), run_time=2.7)
-        self.play(self.camera.frame.animate.shift(RIGHT * 0.22).scale(0.98), run_time=4.8, rate_func=smooth)
-        self.play(self.camera.frame.animate.shift(LEFT * 0.22).scale(1 / 0.98), run_time=4.8, rate_func=smooth)
-        self.play(
-            FadeIn(curriculum_hint, shift=UP * 0.06),
-            sim_box.animate.set_fill(opacity=0.18),
-            run_time=2.7,
-        )
+        self.play(FadeIn(curriculum_hint, shift=UP * 0.06), run_time=1.5)
         self.play(
             FadeOut(curriculum_hint, shift=DOWN * 0.06),
             FadeOut(phase1_note, shift=DOWN * 0.06),
-            llm_box.animate.set_stroke(width=1.8, opacity=0.88),
-            sim_box.animate.set_fill(opacity=0.12),
-            run_time=2.7,
+            run_time=1.5,
         )
-        self.wait(6.0)
+        self.wait(5.0) # 58.0s - 75.0s total (1.0+2.0+6.0+1.5+1.5+5.0 = 17.0s)
 
         # =========================================================================
         # PHASE 2: SEMANTIC DARWINIAN LOOP (45.0s - 85.0s)
@@ -3672,8 +3819,8 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
             color=ORANGE,
             stroke_width=3.0,
         ).add_tip(tip_length=0.20)
-        var_lbl = make_label("Biến dị Ngữ nghĩa (Variation)", ORANGE, 0.47).next_to(arrow_variation, UP, buff=0.12)
-        var_sequence = sequence_label(["Nhặt đá", "Chế rìu", "Dựng lều"], ORANGE, 0.38).next_to(var_lbl, DOWN, buff=0.08)
+        var_lbl = make_label("Biến dị Ngữ nghĩa (Variation)", ORANGE, 0.54).next_to(arrow_variation, UP, buff=0.12)
+        var_sequence = sequence_label(["Nhặt đá", "Chế rìu", "Dựng lều"], ORANGE, 0.43).next_to(var_lbl, DOWN, buff=0.08)
 
         arrow_selection = ArcBetweenPoints(
             sim_box.get_bottom() + RIGHT * 0.25,
@@ -3682,8 +3829,8 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
             color=GOLD,
             stroke_width=3.0,
         ).add_tip(tip_length=0.20)
-        sel_lbl = make_label("Chọn lọc Ngữ nghĩa (Selection)", GOLD, 0.47).next_to(arrow_selection, DOWN, buff=0.12)
-        sel_sequence = sequence_label(["Kết quả hành vi", "Đánh giá phản hồi"], GOLD, 0.36).next_to(sel_lbl, UP, buff=0.08)
+        sel_lbl = make_label("Chọn lọc Ngữ nghĩa (Selection)", GOLD, 0.54).next_to(arrow_selection, DOWN, buff=0.12)
+        sel_sequence = sequence_label(["Kết quả hành vi", "Đánh giá phản hồi"], GOLD, 0.40).next_to(sel_lbl, UP, buff=0.08)
 
         particles_var = VGroup(*[Dot(radius=0.045, color=ORANGE, fill_opacity=0.86) for _ in range(6)])
         particles_sel = VGroup(*[Dot(radius=0.045, color=GOLD, fill_opacity=0.82) for _ in range(6)])
@@ -3696,59 +3843,49 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
                     dot.set_opacity(0.30 + 0.70 * np.sin(PI * t))
             return updater
 
-        self.play(Create(arrow_variation), FadeIn(var_lbl, shift=DOWN * 0.08), FadeIn(var_sequence), run_time=1.6)
-        self.play(Create(arrow_selection), FadeIn(sel_lbl, shift=UP * 0.08), FadeIn(sel_sequence), run_time=1.4)
-        particles_var.add_updater(make_flow_updater(arrow_variation, speed=0.50, delay=0.11))
-        particles_sel.add_updater(make_flow_updater(arrow_selection, speed=0.44, delay=0.12))
-        self.add(particles_var, particles_sel)
+        loop_hint = make_chip("vòng lặp đề xuất và chọn lọc", GOLD, 0.34, min_width=2.75).to_edge(DOWN, buff=0.52)
+        agent_trace = TracedPath(sim_agent.get_center, stroke_color=BLUE_C, stroke_width=2.0, stroke_opacity=0.44, dissipating_time=5.5)
+        self.add(agent_trace)
         loop_group = VGroup(
             sim_group, llm_group, ripple_waves,
             arrow_variation, var_lbl, var_sequence,
             arrow_selection, sel_lbl, sel_sequence,
             particles_var, particles_sel,
+            agent_trace,
         )
 
-        loop_hint = make_chip("vòng lặp đề xuất và chọn lọc", GOLD, 0.34, min_width=2.75).to_edge(DOWN, buff=0.52)
-        agent_motion_path = VMobject(color=BLUE_C, stroke_opacity=0.0)
-        agent_motion_path.set_points_smoothly([
-            sim_agent.get_center(),
-            sim_agent.get_center() + LEFT * 0.42 + UP * 0.18,
-            sim_agent.get_center() + RIGHT * 0.34 + UP * 0.34,
-            sim_agent.get_center() + RIGHT * 0.48 + DOWN * 0.10,
-        ])
-        agent_trace = TracedPath(sim_agent.get_center, stroke_color=BLUE_C, stroke_width=2.0, stroke_opacity=0.44, dissipating_time=5.5)
-        self.add(agent_trace)
-        loop_group.add(agent_trace)
-
-        self.play(FadeIn(loop_hint, shift=UP * 0.08), run_time=2.0)
+        self.play(Create(arrow_variation), FadeIn(var_lbl, shift=DOWN * 0.08), FadeIn(var_sequence), run_time=1.5)
+        particles_var.add_updater(make_flow_updater(arrow_variation, speed=0.50, delay=0.11))
+        self.add(particles_var)
         for task_name in ["Nhặt đá", "Chế rìu", "Dựng lều"]:
             task_chip = make_chip(task_name, ORANGE, 0.33, min_width=1.18).move_to(arrow_variation.point_from_proportion(0.0))
-            self.play(FadeIn(task_chip, scale=0.85), MoveAlongPath(task_chip, arrow_variation), run_time=2.2)
+            self.play(FadeIn(task_chip, scale=0.85), MoveAlongPath(task_chip, arrow_variation), run_time=2.0)
             self.play(FadeOut(task_chip, scale=0.90), run_time=0.4)
-        self.play(
-            MoveAlongPath(sim_agent, agent_motion_path),
-            arrow_variation.animate.set_stroke(width=4.2, opacity=1.0),
-            run_time=6.5,
-            rate_func=smooth,
-        )
+        self.wait(4.3) # 75.0s - 88.0s total (1.5 + 7.2 + 4.3 = 13.0s)
+
+        self.play(Create(arrow_selection), FadeIn(sel_lbl, shift=UP * 0.08), FadeIn(sel_sequence), run_time=1.5)
+        particles_sel.add_updater(make_flow_updater(arrow_selection, speed=0.44, delay=0.12))
+        self.add(particles_sel)
         feedback_chip = make_chip("đánh giá phản hồi", GOLD, 0.32, min_width=1.75).move_to(arrow_selection.point_from_proportion(0.0))
-        self.play(FadeIn(feedback_chip, scale=0.85), MoveAlongPath(feedback_chip, arrow_selection), run_time=5.1)
-        self.play(FadeOut(feedback_chip, scale=0.90), run_time=0.6)
+        self.play(FadeIn(feedback_chip, scale=0.85), MoveAlongPath(feedback_chip, arrow_selection), run_time=4.0)
+        self.play(FadeOut(feedback_chip, scale=0.90), run_time=0.5)
+        self.wait(6.0) # 88.0s - 100.0s total (1.5 + 4.5 + 6.0 = 12.0s)
+
+        self.play(FadeIn(loop_hint, shift=UP * 0.08), run_time=1.5)
         self.play(
-            arrow_variation.animate.set_stroke(width=3.0, opacity=0.88),
+            arrow_variation.animate.set_stroke(width=4.2, opacity=1.0),
             arrow_selection.animate.set_stroke(width=4.2, opacity=1.0),
             sim_agent.animate.scale(1.15),
             run_time=2.0,
         )
         self.play(
+            arrow_variation.animate.set_stroke(width=3.0, opacity=0.88),
             arrow_selection.animate.set_stroke(width=3.0, opacity=0.88),
             sim_agent.animate.scale(1 / 1.15),
             run_time=2.0,
         )
-        self.play(self.camera.frame.animate.shift(LEFT * 0.20), run_time=3.0, rate_func=smooth)
-        self.play(self.camera.frame.animate.shift(RIGHT * 0.20), run_time=3.0, rate_func=smooth)
-        self.play(FadeOut(loop_hint, shift=DOWN * 0.06), run_time=2.0)
-        self.wait(3.0)
+        self.play(FadeOut(loop_hint, shift=DOWN * 0.06), run_time=1.5)
+        self.wait(3.0) # 100.0s - 110.0s total (1.5 + 2.0 + 2.0 + 1.5 + 3.0 = 10.0s)
 
         # =========================================================================
         # PHASE 3: SAMPLE EFFICIENCY GRAPH (85.0s - 110.0s)
@@ -3764,12 +3901,27 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
         graph_title = make_label("Sample Efficiency", GOLD, 0.55).next_to(graph_axes, UP, buff=0.22)
         x_axis_label = make_label("Số lượng mẫu huấn luyện", GRAY_A, 0.36).next_to(graph_axes.x_axis, DOWN, buff=0.22)
         y_axis_label = make_label("Hiệu suất", GRAY_A, 0.36).rotate(PI / 2).next_to(graph_axes.y_axis, LEFT, buff=0.28)
+        few_sample_zone = Polygon(
+            graph_axes.c2p(0.0, 0.0),
+            graph_axes.c2p(2.35, 0.0),
+            graph_axes.c2p(2.35, 10.0),
+            graph_axes.c2p(0.0, 10.0),
+            color=GOLD,
+            fill_color=GOLD,
+            fill_opacity=0.08,
+            stroke_width=0.0,
+        )
+        few_sample_lbl = make_label("vùng ít mẫu", GOLD, 0.32).next_to(graph_axes.c2p(1.16, 9.20), DOWN, buff=0.03)
         llm_curve = graph_axes.plot(lambda x: 9.0 * (1.0 - np.exp(-x / 1.55)), color=GREEN_C, stroke_width=3.8)
-        llm_curve_lbl = make_label("LLM Proposer", GREEN_C, 0.40).next_to(graph_axes.c2p(6.2, 8.7), RIGHT, buff=0.12)
+        llm_curve_lbl = make_label("Đề xuất bởi LLM", GREEN_C, 0.40).next_to(graph_axes.c2p(6.2, 8.7), RIGHT, buff=0.12)
         random_curve = graph_axes.plot(lambda x: 0.85 + 0.10 * np.sin(x * 1.3), color=GRAY_E, stroke_width=3.2)
-        random_curve_lbl = make_label("Random / Uniform", GRAY_A, 0.38).next_to(graph_axes.c2p(6.6, 0.92), UP, buff=0.10)
+        random_curve_lbl = make_label("Lấy mẫu Ngẫu nhiên", GRAY_A, 0.38).next_to(graph_axes.c2p(6.6, 0.92), UP, buff=0.10)
+        gain_chip = make_chip("100x fewer samples", GREEN_C, 0.34, min_width=2.20).next_to(graph_axes.c2p(2.6, 7.0), RIGHT, buff=0.16)
+        gain_counter = Integer(1, color=GREEN_C).scale(0.50).next_to(gain_chip, UP, buff=0.08)
+        gain_suffix = make_label("x", GREEN_C, 0.38).next_to(gain_counter, RIGHT, buff=0.03)
+        gain_counter_group = VGroup(gain_counter, gain_suffix)
 
-        self.play(loop_group.animate.scale(0.52).to_edge(UP, buff=0.80), run_time=2.0, rate_func=smooth)
+        self.play(loop_group.animate.scale(0.52).to_edge(UP, buff=0.80), run_time=1.5)
         self.play(
             Create(graph_axes),
             FadeIn(graph_title),
@@ -3779,7 +3931,7 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
             FadeIn(random_curve_lbl),
             Create(llm_curve),
             FadeIn(llm_curve_lbl),
-            run_time=3.0,
+            run_time=2.5,
         )
         llm_marker = Dot(radius=0.07, color=GREEN_C).move_to(llm_curve.get_start())
         random_marker = Dot(radius=0.065, color=GRAY_E).move_to(random_curve.get_start())
@@ -3794,23 +3946,45 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
         gap_label = make_label("sample-efficiency gap", GOLD, 0.34).next_to(efficiency_gap, RIGHT, buff=0.14)
         graph_group = VGroup(
             graph_axes, graph_title, x_axis_label, y_axis_label,
+            few_sample_zone, few_sample_lbl,
             random_curve, random_curve_lbl, llm_curve, llm_curve_lbl,
             llm_marker, random_marker, efficiency_gap, gap_label,
+            gain_chip, gain_counter_group,
         )
+
         self.play(
             FadeIn(llm_marker, scale=0.70),
             FadeIn(random_marker, scale=0.70),
             MoveAlongPath(llm_marker, llm_curve),
             MoveAlongPath(random_marker, random_curve),
-            run_time=6.0,
-            rate_func=smooth,
+            run_time=4.5,
         )
-        self.play(Create(efficiency_gap), FadeIn(gap_label, shift=LEFT * 0.08), run_time=3.0)
-        self.play(llm_curve.animate.set_stroke(width=5.2, opacity=1.0), llm_curve_lbl.animate.scale(1.08), run_time=2.5)
-        self.play(llm_curve.animate.set_stroke(width=3.8, opacity=1.0), llm_curve_lbl.animate.scale(1 / 1.08), run_time=2.5)
+        self.wait(1.5) # 110.0s - 120.0s total (1.5 + 2.5 + 4.5 + 1.5 = 10.0s)
+
+        self.play(
+            Create(efficiency_gap),
+            FadeIn(gap_label, shift=LEFT * 0.08),
+            FadeIn(gain_chip, shift=LEFT * 0.10),
+            FadeIn(gain_counter_group, scale=0.85),
+            run_time=1.2,
+        )
+        self.play(
+            ChangeDecimalToValue(gain_counter, 100),
+            gain_chip.animate.set_stroke(width=2.0, opacity=1.0),
+            run_time=1.8,
+        )
+        self.wait(7.0) # 120.0s - 130.0s total (1.2 + 1.8 + 7.0 = 10.0s)
+
+        self.play(
+            FadeIn(few_sample_zone),
+            FadeIn(few_sample_lbl),
+            run_time=1.5,
+        )
+        self.play(llm_curve.animate.set_stroke(width=5.2, opacity=1.0), llm_curve_lbl.animate.scale(1.08), run_time=2.0)
+        self.play(llm_curve.animate.set_stroke(width=3.8, opacity=1.0), llm_curve_lbl.animate.scale(1 / 1.08), run_time=2.0)
         self.play(random_curve.animate.set_stroke(opacity=0.36), random_curve_lbl.animate.set_color(GRAY_B), run_time=2.0)
         self.play(random_curve.animate.set_stroke(opacity=1.0), random_curve_lbl.animate.set_color(GRAY_A), run_time=2.0)
-        self.wait(2.0)
+        self.wait(0.5) # 130.0s - 140.0s total (1.5 + 2.0 + 2.0 + 2.0 + 2.0 + 0.5 = 10.0s)
 
         # =========================================================================
         # PHASE 4: AI SAFETY & SPECIFICATION GAMING (110.0s - 135.0s)
@@ -3824,14 +3998,35 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
             run_time=1.0,
         )
 
-        safety_title = make_label("AI Safety: Proxy Observer", GOLD, 0.56).next_to(title, DOWN, buff=0.22)
+        safety_title = make_label("An toàn AI: Quan sát viên Ủy nhiệm", GOLD, 0.56).next_to(title, DOWN, buff=0.22)
         protected_agent = VGroup(
             Circle(radius=0.85, color=BLUE_C, fill_color=BLUE_E, fill_opacity=0.10, stroke_width=2.6, stroke_opacity=0.86),
             Arc(radius=0.92, start_angle=PI * 0.06, angle=PI * 0.88, color=BLUE_C, stroke_width=3.0, stroke_opacity=0.72),
             Dot(radius=0.10, color=BLUE_C),
         ).move_to(DOWN * 0.20)
-        proxy_label = make_label("Proxy Observer", BLUE_C, 0.50).next_to(protected_agent, DOWN, buff=0.24)
-        safety_group = VGroup(safety_title, protected_agent, proxy_label)
+        proxy_label = make_label("Quan sát viên Ủy nhiệm (Proxy Observer)", BLUE_C, 0.50).next_to(protected_agent, DOWN, buff=0.24)
+        reward_trap = make_chip("+999 proxy reward", RED, 0.34, min_width=2.20).move_to(RIGHT * 2.85 + DOWN * 0.18)
+        loophole_gate = VGroup(
+            DashedVMobject(Circle(radius=0.46, color=RED, stroke_width=2.0, stroke_opacity=0.72), num_dashes=18),
+            make_label("loophole", RED, 0.30),
+        ).arrange(DOWN, buff=0.05).next_to(reward_trap, UP, buff=0.18)
+        lure_path = DashedLine(
+            protected_agent.get_center() + RIGHT * 0.18,
+            reward_trap.get_left() + LEFT * 0.08,
+            color=RED,
+            stroke_width=1.6,
+            stroke_opacity=0.62,
+            dash_length=0.09,
+            dashed_ratio=0.50,
+        )
+        lure_arrow = CurvedArrow(
+            protected_agent.get_center() + RIGHT * 0.14 + UP * 0.08,
+            reward_trap.get_left() + LEFT * 0.02,
+            angle=-TAU / 10,
+            color=RED,
+            stroke_width=2.2,
+        )
+        safety_group = VGroup(safety_title, protected_agent, proxy_label, reward_trap, loophole_gate, lure_path, lure_arrow)
         attack_specs = [
             (LEFT * 5.2 + UP * 1.35, protected_agent.get_center() + LEFT * 0.75 + UP * 0.34),
             (RIGHT * 5.2 + UP * 1.00, protected_agent.get_center() + RIGHT * 0.78 + UP * 0.18),
@@ -3842,13 +4037,28 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
             Arrow(start, end, color=RED, stroke_width=3.0, max_tip_length_to_length_ratio=0.14)
             for start, end in attack_specs
         ])
-        attack_label = make_label("Specification Gaming", RED, 0.48).to_edge(DOWN, buff=0.58)
+        attack_label = make_label("Lách luật Hàm thưởng (Specification Gaming)", RED, 0.48).to_edge(DOWN, buff=0.58)
         shards = VGroup()
         for _, end in attack_specs:
             for angle in [PI / 5, -PI / 4, PI / 2]:
                 shards.add(Line(end, end + rotate_vector(RIGHT * 0.22, angle), color=RED, stroke_width=1.8, stroke_opacity=0.78))
-        self.play(FadeIn(safety_group, shift=UP * 0.10), run_time=1.4)
-        self.play(LaggedStart(*[GrowArrow(arrow) for arrow in attacks], lag_ratio=0.10), FadeIn(attack_label), run_time=1.8)
+        self.play(FadeIn(VGroup(safety_title, protected_agent, proxy_label), shift=UP * 0.10), run_time=2.0)
+        self.play(
+            FadeIn(reward_trap, shift=LEFT * 0.08),
+            FadeIn(loophole_gate, scale=0.88),
+            Create(lure_path),
+            Create(lure_arrow),
+            run_time=2.0,
+        )
+        self.play(
+            reward_trap.animate.set_stroke(width=2.2, opacity=1.0),
+            loophole_gate.animate.set_opacity(0.55),
+            rate_func=there_and_back,
+            run_time=2.0,
+        )
+        self.wait(1.0) # 140.0s - 147.0s total (2.0 + 2.0 + 2.0 + 1.0 = 7.0s)
+
+        self.play(LaggedStart(*[GrowArrow(arrow) for arrow in attacks], lag_ratio=0.10), FadeIn(attack_label), run_time=1.5)
         self.play(FadeIn(shards), attacks.animate.set_opacity(0.10), run_time=0.8)
 
         defense_particles = VGroup()
@@ -3875,13 +4085,9 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
             Circle(radius=0.86 + 0.14 * index, color=BLUE_C, stroke_width=1.6, stroke_opacity=0.38 - 0.08 * index).move_to(protected_agent)
             for index in range(3)
         ])
-        self.play(protected_agent.animate.scale(1.06), attacks.animate.set_opacity(0.18), run_time=3.0)
-        self.play(protected_agent.animate.scale(1 / 1.06), attacks.animate.set_opacity(0.10), run_time=3.0)
-        self.play(LaggedStart(*[Create(ring) for ring in impact_rings], lag_ratio=0.20), run_time=3.0)
-        self.play(impact_rings.animate.scale(1.45).set_opacity(0.0), run_time=3.0)
-        self.play(attack_label.animate.set_color(GRAY_A), run_time=2.0)
-        self.play(attack_label.animate.set_color(RED), run_time=2.0)
-        self.wait(4.0)
+        self.play(protected_agent.animate.scale(1.06), attacks.animate.set_opacity(0.18), run_time=2.0)
+        self.play(protected_agent.animate.scale(1 / 1.06), attacks.animate.set_opacity(0.10), run_time=2.0)
+        self.play(LaggedStart(*[Create(ring) for ring in impact_rings], lag_ratio=0.20), run_time=1.7) # 147.0s - 155.0s total (1.5 + 0.8 + 2.0 + 2.0 + 1.7 = 8.0s)
 
         # =========================================================================
         # PHASE 5: TRANSITION TO FOUNDATION WORLD MODELS (135.0s - 180.0s)
@@ -3893,7 +4099,7 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
             FadeOut(shards),
             FadeOut(attack_label),
             FadeOut(title),
-            run_time=1.5,
+            run_time=1.0,
         )
 
         learned_env_text = make_text_block(
@@ -3907,12 +4113,11 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
             buff=0.18,
             aligned_edge=ORIGIN,
         )
-        self.play(FadeIn(learned_env_text, shift=UP * 0.16), run_time=2.2)
-        self.play(learned_env_text[0].animate.scale(1.06), run_time=2.0)
-        self.play(learned_env_text[1].animate.set_color(BLUE_C), run_time=3.0)
-        self.play(learned_env_text[2].animate.set_color(GOLD), run_time=2.0)
-        self.play(learned_env_text.animate.shift(UP * 0.06), rate_func=there_and_back, run_time=3.0)
-        self.wait(2.0)
+        self.play(FadeIn(learned_env_text, shift=UP * 0.16), run_time=1.5)
+        self.play(learned_env_text[0].animate.scale(1.06), run_time=1.0)
+        self.play(learned_env_text[1].animate.set_color(BLUE_C), run_time=1.5) # 155.0s - 160.0s total (1.0 + 1.5 + 1.0 + 1.5 = 5.0s)
+
+        self.play(learned_env_text[2].animate.set_color(GOLD), run_time=1.0)
 
         ch2_title = Tex(r"\text{\textbf{02. Foundation World Models}}", color=GOLD).scale(1.25)
         ch2_title.set_z_index(2)
@@ -3924,7 +4129,7 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
             ReplacementTransform(learned_env_text, ch2_title),
             FadeIn(title_glow, scale=1.05),
             self.camera.frame.animate.scale(0.88),
-            run_time=2.8,
+            run_time=2.0,
             rate_func=smooth,
         )
         title_sparks = VGroup()
@@ -3946,17 +4151,13 @@ class SC_07_TheEvolutionaryEngines(VietnameseMovingCameraScene):
 
         title_sparks.add_updater(update_title_sparks)
         self.add(title_sparks)
-        self.play(title_glow.animate.set_stroke(width=10.0, opacity=0.32), run_time=4.0)
-        self.play(title_glow.animate.set_stroke(width=7.0, opacity=0.18), run_time=4.0)
-        self.play(ch2_title.animate.scale(1.025), run_time=4.0)
-        self.play(ch2_title.animate.scale(1 / 1.025), run_time=4.0)
-        self.wait(5.0)
-        self.play(title_glow.animate.set_stroke(width=9.0, opacity=0.28), rate_func=there_and_back, run_time=4.0)
+        self.play(title_glow.animate.set_stroke(width=10.0, opacity=0.32), run_time=2.0)
+        self.play(title_glow.animate.set_stroke(width=7.0, opacity=0.18), run_time=2.0)
         title_sparks.clear_updaters()
         self.play(
             self.camera.frame.animate.scale(1 / 0.88),
             FadeOut(title_sparks),
             FadeOut(title_glow),
             FadeOut(ch2_title),
-            run_time=1.5,
+            run_time=2.0,
         )
