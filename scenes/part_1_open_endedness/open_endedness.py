@@ -2271,6 +2271,7 @@ class SC_04_TheIllusionOfGoals(VietnameseScene):
         title = create_title_banner(r"SC\_04: The Illusion of Goals (Objective Design)")
         title.scale(0.88).to_edge(UP, buff=0.35)
         self.play(FadeIn(title, shift=DOWN * 0.12), run_time=1.0)
+        self.wait(19.0)
 
         def make_label(text, color=WHITE, scale=0.5):
             return Tex(rf"\text{{{text}}}", color=color).scale(scale)
@@ -2475,10 +2476,15 @@ class SC_04_TheIllusionOfGoals(VietnameseScene):
             rate_func=smooth,
         )
         trapped_agent = Dot(local_point, color=RED, radius=0.12)
+        cross = VGroup(
+            Line(local_point + UL * 0.28, local_point + DR * 0.28, color=RED, stroke_width=5.5),
+            Line(local_point + DL * 0.28, local_point + UR * 0.28, color=RED, stroke_width=5.5)
+        )
         self.play(
             FadeOut(agent),
             FadeOut(agent_label),
             FadeIn(trapped_agent),
+            Create(cross),
             FadeIn(local_marker),
             Write(local_lbl),
             FadeIn(global_marker),
@@ -2487,19 +2493,20 @@ class SC_04_TheIllusionOfGoals(VietnameseScene):
             run_time=2.1,
         )
 
-        trapped_agent.phase = 0.0
+        trapped_group = VGroup(trapped_agent, cross)
+        trapped_group.phase = 0.0
 
-        def trapped_wobble(dot, dt):
-            dot.phase += dt * 8.0
-            dot.move_to(local_point + RIGHT * 0.065 * np.sin(dot.phase) + UP * 0.025 * np.sin(dot.phase * 1.7))
+        def trapped_wobble(group, dt):
+            group.phase += dt * 8.0
+            group.move_to(local_point + RIGHT * 0.065 * np.sin(group.phase) + UP * 0.025 * np.sin(group.phase * 1.7))
 
-        trapped_agent.add_updater(trapped_wobble)
-        self.wait(74.0)
+        trapped_group.add_updater(trapped_wobble)
+        self.wait(33.0)
 
         # =========================================================================
-        # PHASE 2: STEPPING STONES (85.0s - 142.0s)
+        # PHASE 2: STEPPING STONES (63.0s - 142.0s)
         # =========================================================================
-        trapped_agent.clear_updaters()
+        trapped_group.clear_updaters()
         self.play(
             FadeOut(phase1_title),
             FadeOut(axes),
@@ -2512,10 +2519,10 @@ class SC_04_TheIllusionOfGoals(VietnameseScene):
             FadeOut(global_lbl),
             FadeOut(warning),
             FadeOut(descent_arrow),
-            FadeOut(trapped_agent),
+            FadeOut(trapped_group),
             run_time=1.2,
         )
-
+        
         concept_title = make_label("Stepping Stones: tiến bộ phi tuyến tính", GOLD, 0.70)
         concept_title.next_to(title, DOWN, buff=0.26)
         card1 = make_vacuum_card(LEFT * 3.05 + DOWN * 0.35)
@@ -2552,8 +2559,13 @@ class SC_04_TheIllusionOfGoals(VietnameseScene):
             buff=0.10,
         ).to_edge(DOWN, buff=0.42)
 
+        self.wait(6.0)
         self.play(
             FadeIn(concept_title, shift=DOWN * 0.10),
+            run_time=1.9,
+        )
+        self.wait(14.0)
+        self.play(
             FadeIn(card1, shift=RIGHT * 0.16),
             FadeIn(card2, shift=LEFT * 0.16),
             run_time=1.9,
@@ -2563,7 +2575,30 @@ class SC_04_TheIllusionOfGoals(VietnameseScene):
         self.play(glow_ring.animate.scale(2.6).set_stroke(opacity=0), run_time=1.1)
         self.remove(glow_ring)
         self.play(LaggedStart(*[FadeIn(line, shift=UP * 0.08) for line in nonlinear_message], lag_ratio=0.12), run_time=1.5)
-        self.wait(49.9)
+        
+        # Split wait(49.9) to show banned research cross
+        self.wait(30.0)
+        
+        bridge_center = bridge.get_center()
+        bridge_cross = VGroup(
+            Line(bridge_center + UL * 0.38 + LEFT * 0.05, bridge_center + DR * 0.38 + RIGHT * 0.05, color=RED, stroke_width=5.5),
+            Line(bridge_center + DL * 0.38 + LEFT * 0.05, bridge_center + UR * 0.38 + RIGHT * 0.05, color=RED, stroke_width=5.5)
+        )
+        #ban_label = make_label("Cấm nghiên cứu ống chân không!", RED, 0.40).next_to(bridge_cross, UP, buff=0.18)
+        
+        self.play(
+            Create(bridge_cross),
+            bridge.animate.set_color(RED).set_opacity(0.25),
+            run_time=1.5
+        )
+        
+        self.wait(2.0)
+        
+        self.play(
+            FadeOut(bridge_cross),
+            bridge.animate.set_color(GOLD).set_opacity(1.0),
+            run_time=1.2
+        )
 
         # =========================================================================
         # PHASE 3: FOG OF UNCERTAINTY CLEARING (142.0s - 204.4s)
@@ -2578,116 +2613,229 @@ class SC_04_TheIllusionOfGoals(VietnameseScene):
             run_time=1.2,
         )
 
-        fog_title = make_label("Sương mù bế tắc: mục tiêu thật bị che khuất", GOLD, 0.58)
+        fog_title = make_label("Bản đồ đồng mức: Không gian tri thức và Khám phá phi tuyến tính", GOLD, 0.58)
         fog_title.next_to(title, DOWN, buff=0.24)
 
-        axes = Axes(
-            x_range=[0, 10, 1],
-            y_range=[-1.6, 4.0, 1],
-            x_length=10.8,
-            y_length=4.15,
-            axis_config={"color": GRAY_B, "stroke_width": 1.0, "stroke_opacity": 0.55},
-            tips=False,
-        ).shift(DOWN * 0.52)
-        grid = VGroup()
-        for x in np.arange(1, 10, 1):
-            grid.add(Line(axes.c2p(x, -1.6), axes.c2p(x, 4.0), color=GRAY_B, stroke_width=0.55, stroke_opacity=0.13))
-        for y in np.arange(-1, 4, 1):
-            grid.add(Line(axes.c2p(0, y), axes.c2p(10, y), color=GRAY_B, stroke_width=0.55, stroke_opacity=0.13))
-        terrain = axes.plot(objective_curve, x_range=[0.15, 9.85], color=GRAY_A, stroke_width=3.0)
+        peak_pos = RIGHT * 3.5 + UP * 0.5
+        contours = VGroup()
+        for r in np.arange(0.6, 3.4, 0.4):
+            ellipse = Ellipse(
+                width=r * 2.2,
+                height=r * 1.6,
+                color=interpolate_color(ManimColor(GRAY_E), ManimColor(GREEN_C), (3.4 - r)/2.8),
+                stroke_width=2.0,
+                stroke_opacity=0.8
+            ).move_to(peak_pos).rotate(15 * DEGREES)
+            contours.add(ellipse)
 
-        local_point = axes.c2p(local_x, objective_curve(local_x))
-        global_point = axes.c2p(global_x, objective_curve(global_x))
-        local_marker = VGroup(
-            Dot(local_point, radius=0.09, color=RED),
-            Circle(radius=0.32, color=RED, stroke_width=1.4, stroke_opacity=0.55).move_to(local_point),
+        # Premium flag design representing "lá cờ mục tiêu cắm ở xa"
+        flag_pole = Line(peak_pos, peak_pos + UP * 0.85, color=GOLD, stroke_width=2.5)
+        flag_banner = Polygon(
+            peak_pos + UP * 0.85,
+            peak_pos + UP * 0.45,
+            peak_pos + UP * 0.65 + RIGHT * 0.6,
+            color=GOLD,
+            fill_color=GOLD,
+            fill_opacity=0.85
         )
-        global_marker = VGroup(
-            Dot(global_point, radius=0.09, color=GREEN_C),
-            Circle(radius=0.38, color=GREEN_C, stroke_width=1.4, stroke_opacity=0.58).move_to(global_point),
+        flag_lbl = make_label("Mục tiêu", GOLD, 0.36).next_to(flag_pole, UP, buff=0.1)
+        flag = VGroup(flag_pole, flag_banner, flag_lbl)
+
+        trap_pos = LEFT * 1.5 + DOWN * 0.5
+        trap_contours = VGroup()
+        for r in np.arange(0.3, 1.2, 0.3):
+            trap_contours.add(Ellipse(
+                width=r * 2.0,
+                height=r * 1.5,
+                color=interpolate_color(ManimColor(GRAY_E), ManimColor(RED), (1.2 - r)/0.9),
+                stroke_width=1.6,
+                stroke_opacity=0.6
+            ).move_to(trap_pos).rotate(-10 * DEGREES))
+        
+        trap_marker = VGroup(
+            Dot(trap_pos, radius=0.08, color=RED),
+            make_label("Cực trị cục bộ (Bẫy)", RED, 0.38).next_to(trap_pos, DOWN, buff=0.12)
         )
-        local_lbl = make_label("Local Minimum", RED, 0.45).next_to(local_marker, DOWN, buff=0.18)
-        global_lbl = make_label("Global Optimum", GREEN_C, 0.45).next_to(global_marker, DOWN, buff=0.18)
 
-        fog_bands = VGroup()
-        for i, x in enumerate(np.linspace(5.0, 9.5, 8)):
-            band = Rectangle(
-                width=0.78,
-                height=4.70,
-                stroke_width=0,
-                fill_color=interpolate_color(ManimColor(GRAY_E), ManimColor(BLUE_E), i / 8),
-                fill_opacity=0.78,
-            ).move_to(axes.c2p(x, 1.10))
-            band.base_opacity = 0.78 - i * 0.035
-            fog_bands.add(band)
+        start_pos = LEFT * 3.5 + DOWN * 1.5
+        exploration_agent = Dot(start_pos, color=ORANGE, radius=0.11)
+        agent_lbl = make_label("Tác nhân", ORANGE, 0.4).next_to(exploration_agent, DOWN, buff=0.12)
 
-        exploration_agent = Dot(local_point, color=ORANGE, radius=0.115)
-        exploration_path = VMobject(color=GOLD, stroke_width=2.4, stroke_opacity=0.82)
-        path_points = [
-            axes.c2p(local_x, objective_curve(local_x)),
-            axes.c2p(3.55, objective_curve(3.55) + 0.55),
-            axes.c2p(4.75, objective_curve(4.75) + 0.15),
-            axes.c2p(6.30, objective_curve(6.30) + 0.42),
-            global_point,
-        ]
-        exploration_path.set_points_smoothly(path_points)
-        fog_agent_tracker = ValueTracker(local_x)
+        # Helper to create realistic soft fog using overlapping circles
+        def create_soft_fog(center, width, height, num_particles=15, seed=42):
+            rng = random.Random(seed)
+            particles = VGroup()
+            for _ in range(num_particles):
+                r = rng.uniform(0.5, 0.9)
+                x_off = rng.uniform(-width/2 + r*0.5, width/2 - r*0.5)
+                y_off = rng.uniform(-height/2 + r*0.5, height/2 - r*0.5)
+                particle = Circle(
+                    radius=r,
+                    color=GRAY_E,
+                    fill_color=GRAY_E,
+                    fill_opacity=0.35,
+                    stroke_width=0
+                ).move_to(center + np.array([x_off, y_off, 0]))
+                particles.add(particle)
+            return particles
 
-        def fog_clear_updater(group, dt):
-            frontier_x = fog_agent_tracker.get_value() + 0.45
-            for band in group:
-                band_x = axes.p2c(band.get_center())[0]
-                fade = np.clip((frontier_x - band_x + 0.9) / 1.6, 0.0, 1.0)
-                band.set_fill(opacity=band.base_opacity * (1.0 - fade))
+        fog_left = create_soft_fog(RIGHT * 0.5 + DOWN * 0.5, 3.6, 5.5, num_particles=16, seed=123)
+        fog_right = create_soft_fog(RIGHT * 4.25 + DOWN * 0.5, 4.5, 5.5, num_particles=20, seed=456)
 
-        fog_bands.add_updater(fog_clear_updater)
+        chain = DashedLine(start_pos, peak_pos, color=GRAY_A, stroke_width=2.5, dashed_ratio=0.65)
+        chain_label = make_label("Sợi xích mục tiêu", RED, 0.35).next_to(chain.get_center(), UP * 0.5).rotate(chain.get_angle())
+
+        # 1. 142.0s – 152.0s: Contour map introduction (10s total)
         self.play(
-            FadeIn(fog_title, shift=DOWN * 0.10),
-            Create(grid),
-            Create(axes),
-            Create(terrain),
-            FadeIn(local_marker),
-            Write(local_lbl),
-            FadeIn(global_marker),
-            Write(global_lbl),
-            FadeIn(fog_bands),
-            FadeIn(exploration_agent),
-            run_time=2.2,
+            FadeIn(fog_title, shift=DOWN * 0.15),
+            run_time=1.2
         )
-        self.play(Create(exploration_path), run_time=1.6)
-
+        self.wait(15.3) 
         self.play(
-            MoveAlongPath(exploration_agent, exploration_path),
-            fog_agent_tracker.animate.set_value(global_x),
-            global_marker.animate.set_color(GREEN_C),
-            run_time=7.0,
+            Create(contours, lag_ratio=0.15),
+            Create(trap_contours, lag_ratio=0.15),
+            run_time=2.5
+        )
+        self.play(
+            FadeIn(exploration_agent, shift=UP * 0.1),
+            FadeIn(agent_lbl, shift=UP * 0.1),
+            FadeIn(flag, shift=DOWN * 0.1),
+            FadeIn(trap_marker),
+            FadeIn(fog_left),
+            FadeIn(fog_right),
+            run_time=1.8
+        )
+        self.wait(4.5)
+
+        # 2. 152.0s – 164.0s: Chain pulling agent into local optimum (12s total)
+        self.play(Create(chain), FadeIn(chain_label), run_time=1.8)
+        self.play(
+            exploration_agent.animate.move_to(trap_pos),
+            agent_lbl.animate.next_to(trap_pos, DOWN, buff=0.12),
+            run_time=3.5,
             rate_func=smooth,
         )
-        revealed_note = make_text_block(
-            ["Đi ngang qua vùng mới lạ mở rộng bản đồ.", "Không phải bước nào cũng tăng điểm ngay lập tức."],
-            color=GOLD,
-            scale=0.44,
-            buff=0.10,
-        ).to_edge(DOWN, buff=0.42)
-        self.play(LaggedStart(*[Write(line) for line in revealed_note], lag_ratio=0.12), run_time=1.4)
-        self.wait(47.5)
 
-        fog_bands.clear_updaters()
+        trap_cross = VGroup(
+            Line(trap_pos + UL * 0.22, trap_pos + DR * 0.22, color=RED, stroke_width=5.5),
+            Line(trap_pos + DL * 0.22, trap_pos + UR * 0.22, color=RED, stroke_width=5.5)
+        )
+        self.play(Create(trap_cross), run_time=1.2)
+
+        exploration_agent.phase = 0.0
+        def wobble_agent_trap(dot, dt):
+            dot.phase += dt * 15.0
+            dot.move_to(trap_pos + RIGHT * 0.05 * np.sin(dot.phase) + UP * 0.02 * np.sin(dot.phase * 1.5))
+        exploration_agent.add_updater(wobble_agent_trap)
+        self.wait(5.5)
+        exploration_agent.clear_updaters()
+        exploration_agent.move_to(trap_pos)
+
+        # 3. 164.0s – 176.0s: Cut chain, jump to Stone 1 (12s total)
+        flash = Flash(chain.get_center(), color=RED, line_length=0.35, num_lines=12)
+        self.play(flash, run_time=0.8)
+
+        chain_left = Line(start_pos, chain.get_center(), color=GRAY_A, stroke_width=2.5)
+        chain_right = Line(chain.get_center(), peak_pos, color=GRAY_A, stroke_width=2.5)
+        self.remove(chain, chain_label)
+        self.add(chain_left, chain_right)
+
+        self.play(
+            chain_left.animate.shift(DL * 0.6).set_opacity(0),
+            chain_right.animate.shift(UR * 0.6).set_opacity(0),
+            FadeOut(trap_cross),
+            run_time=1.8,
+        )
+        self.remove(chain_left, chain_right)
+
+        stone1_pos = LEFT * 0.5 + DOWN * 0.5
+        stone1 = RoundedRectangle(width=1.5, height=0.7, color=BLUE_C, fill_color=GRAY_E, fill_opacity=0.9, corner_radius=0.10).move_to(stone1_pos)
+        stone1_lbl = make_label("Bước đệm 1", BLUE_C, 0.32).move_to(stone1_pos)
+        stone1_group = VGroup(stone1, stone1_lbl)
+
+        self.play(FadeIn(stone1_group, shift=UP * 0.15), run_time=1.5)
+        self.play(
+            exploration_agent.animate.move_to(stone1_pos),
+            agent_lbl.animate.next_to(stone1_pos, DOWN, buff=0.12),
+            run_time=2.5,
+            rate_func=smooth,
+        )
+        self.wait(5.4)
+
+        # 4. 176.0s – 191.0s: Radiate wave 1, reveal Stone 2, jump to Stone 2, wave 2 clears fog (15s total)
+        wave1 = Circle(radius=0.15, color=BLUE_C, stroke_width=3.0).move_to(stone1_pos)
+        self.add(wave1)
+        self.play(
+            wave1.animate.scale(24.0).set_stroke(width=0.5, opacity=0),
+            FadeOut(fog_left),
+            run_time=2.8,
+        )
+        self.remove(wave1)
+
+        stone2_pos = RIGHT * 1.5 + UP * 0.5
+        stone2 = RoundedRectangle(width=1.5, height=0.7, color=ORANGE, fill_color=GRAY_E, fill_opacity=0.9, corner_radius=0.10).move_to(stone2_pos)
+        stone2_lbl = make_label("Bước đệm 2", ORANGE, 0.32).move_to(stone2_pos)
+        stone2_group = VGroup(stone2, stone2_lbl)
+
+        self.play(FadeIn(stone2_group, shift=UP * 0.15), run_time=1.5)
+
+        self.play(
+            exploration_agent.animate.move_to(stone2_pos),
+            agent_lbl.animate.next_to(stone2_pos, DOWN, buff=0.12),
+            run_time=2.2,
+            rate_func=smooth,
+        )
+
+        wave2 = Circle(radius=0.15, color=ORANGE, stroke_width=3.0).move_to(stone2_pos)
+        self.add(wave2)
+        self.play(
+            wave2.animate.scale(24.0).set_stroke(width=0.5, opacity=0),
+            FadeOut(fog_right),
+            run_time=2.8,
+        )
+        self.remove(wave2)
+        self.wait(5.7)
+
+        # 5. 191.0s – 204.4s: Draw path, walk to goal, reveal note, fade out (13.4s total)
+        gold_path = VMobject(color=GOLD, stroke_width=3.0, stroke_opacity=0.9)
+        gold_path.set_points_smoothly([
+            stone2_pos,
+            RIGHT * 2.5 + UP * 0.2,
+            peak_pos
+        ])
+
+        self.play(Create(gold_path), run_time=1.5)
+
+        self.play(
+            MoveAlongPath(exploration_agent, gold_path),
+            agent_lbl.animate.next_to(peak_pos, DOWN, buff=0.12),
+            run_time=4.5,
+            rate_func=smooth,
+        )
+
+        revealed_note = make_text_block(
+            ["Tiến bộ trong không gian phức tạp là hành trình phi tuyến tính,", "các bước đệm trung gian thường không giống mục tiêu cuối cùng."],
+            color=GOLD,
+            scale=0.42,
+            buff=0.10,
+        ).to_edge(DOWN, buff=0.40)
+        self.play(LaggedStart(*[Write(line) for line in revealed_note], lag_ratio=0.12), run_time=1.8)
+        self.wait(4.4)
+
         self.play(
             FadeOut(fog_title),
-            FadeOut(axes),
-            FadeOut(grid),
-            FadeOut(terrain),
-            FadeOut(local_marker),
-            FadeOut(local_lbl),
-            FadeOut(global_marker),
-            FadeOut(global_lbl),
-            FadeOut(fog_bands),
+            FadeOut(contours),
+            FadeOut(flag),
+            FadeOut(trap_contours),
+            FadeOut(trap_marker),
             FadeOut(exploration_agent),
-            FadeOut(exploration_path),
+            FadeOut(agent_lbl),
+            FadeOut(stone1_group),
+            FadeOut(stone2_group),
+            FadeOut(gold_path),
             FadeOut(revealed_note),
             FadeOut(title),
-            run_time=1.5,
+            run_time=1.2,
         )
 
 
@@ -2700,7 +2848,7 @@ class SC_05_TheConcretePlaygrounds(VietnameseMovingCameraScene):
         load_safe_sound(self, "SC_05_Concrete_Playgrounds.wav")
         title = create_title_banner(r"SC\_05: The Concrete Playgrounds: NetHack to XLand")
         title.scale(0.88).to_edge(UP, buff=0.35)
-        self.play(FadeIn(title, shift=DOWN * 0.12), run_time=1.0)
+        self.play(FadeIn(title, shift=DOWN * 0.12), run_time=2.0)
 
         def make_label(text, color=WHITE, scale=0.52):
             return Tex(rf"\text{{{text}}}", color=color).scale(scale)
@@ -2723,18 +2871,19 @@ class SC_05_TheConcretePlaygrounds(VietnameseMovingCameraScene):
             return VGroup(halo, body, core)
 
         def make_dog_icon(center):
-            shield = VMobject(color=ORANGE, fill_color=ORANGE, fill_opacity=0.40, stroke_width=2.0)
-            shield.set_points_smoothly([
-                center + UP * 0.32,
-                center + RIGHT * 0.26 + UP * 0.14,
-                center + RIGHT * 0.18 + DOWN * 0.22,
-                center + DOWN * 0.36,
-                center + LEFT * 0.18 + DOWN * 0.22,
-                center + LEFT * 0.26 + UP * 0.14,
-                center + UP * 0.32,
-            ])
-            inner = shield.copy().scale(0.62).set_fill(opacity=0).set_stroke(GOLD, width=1.0, opacity=0.72)
-            return VGroup(shield, inner)
+            # Cute little puppy/dog icon representing "chú chó nhỏ d"
+            head = Circle(radius=0.18, color=ORANGE, fill_color=ORANGE, fill_opacity=0.85, stroke_width=1.5)
+            head.move_to(center + UP * 0.05)
+            snout = Circle(radius=0.06, color=ORANGE, fill_color=BLACK, fill_opacity=0.8, stroke_width=1.0)
+            snout.move_to(center + DOWN * 0.05)
+            nose = Dot(radius=0.02, color=WHITE).move_to(snout.get_center())
+            ear_l = Ellipse(width=0.08, height=0.18, color=ORANGE, fill_color=ORANGE, fill_opacity=0.85, stroke_width=1.0)
+            ear_l.move_to(center + LEFT * 0.16 + UP * 0.14).rotate(30 * DEGREES)
+            ear_r = Ellipse(width=0.08, height=0.18, color=ORANGE, fill_color=ORANGE, fill_opacity=0.85, stroke_width=1.0)
+            ear_r.move_to(center + RIGHT * 0.16 + UP * 0.14).rotate(-30 * DEGREES)
+            eye_l = Dot(radius=0.025, color=WHITE).move_to(center + LEFT * 0.06 + UP * 0.08)
+            eye_r = Dot(radius=0.025, color=WHITE).move_to(center + RIGHT * 0.06 + UP * 0.08)
+            return VGroup(ear_l, ear_r, head, snout, nose, eye_l, eye_r)
 
         def make_xland_cube(center, size=0.48, depth=0.18, color=BLUE_C, opacity=0.26):
             front = Square(side_length=size, color=color, fill_color=BLUE_E, fill_opacity=opacity, stroke_width=1.0)
@@ -2817,9 +2966,12 @@ class SC_05_TheConcretePlaygrounds(VietnameseMovingCameraScene):
         lens_highlight = Arc(radius=1.12, start_angle=0.35 * PI, angle=0.34 * PI, color=WHITE, stroke_width=1.3, stroke_opacity=0.34).move_to(lens.get_center())
         lens_handle = Line(lens.get_center() + DOWN * 0.92 + RIGHT * 0.92, lens.get_center() + DOWN * 1.72 + RIGHT * 1.72, color=GOLD, stroke_width=5.0, stroke_opacity=0.84)
         magnifier = VGroup(lens, lens_highlight, lens_handle)
-
         self.play(
             FadeIn(phase1_title, shift=DOWN * 0.10),
+            run_time=2.0
+        )
+        self.wait(14)
+        self.play(
             FadeIn(grid_back),
             Create(scan_lines),
             LaggedStart(*[FadeIn(row, shift=UP * 0.04) for row in ascii_grid], lag_ratio=0.08),
@@ -2846,10 +2998,10 @@ class SC_05_TheConcretePlaygrounds(VietnameseMovingCameraScene):
             run_time=1.2,
         )
         self.remove(pulse_a, pulse_d)
-        self.wait(32.5)
+        self.wait(16.7)
 
         # =========================================================================
-        # PHASE 2: SYMBOL GROUNDING MORPHING (45.0s - 95.0s)
+        # PHASE 2: SYMBOL GROUNDING MORPHING (45.0s - 90.0s)
         # =========================================================================
         self.play(cell_map[(3, 6)].animate.set_opacity(0.20), run_time=0.4)
         self.play(self.camera.frame.animate.move_to(magnifier.get_center()).set(width=3.85), run_time=2.4, rate_func=smooth)
@@ -2934,11 +3086,11 @@ class SC_05_TheConcretePlaygrounds(VietnameseMovingCameraScene):
 
         semantic_rings.add_updater(pulse_semantics)
         self.add(semantic_rings)
-        self.wait(43.8)
+        self.wait(10.55)
         semantic_rings.clear_updaters()
 
         # =========================================================================
-        # PHASE 3: XLAND COMBINATORIAL GENERATION (95.0s - 210.0s)
+        # PHASE 3: XLAND COMBINATORIAL GENERATION (90.0s - 171.52s)
         # =========================================================================
         self.play(self.camera.frame.animate.move_to(ORIGIN).set(width=config.frame_width), run_time=2.0, rate_func=smooth)
         xland_title = make_label("XLand: Procedural Generation", GOLD, 0.64)
@@ -2954,9 +3106,9 @@ class SC_05_TheConcretePlaygrounds(VietnameseMovingCameraScene):
             FadeOut(dog_icon),
             FadeOut(semantic_rings),
             FadeIn(xland_title, shift=DOWN * 0.10),
-            run_time=1.4,
+            run_time=1.5,
         )
-
+        self.wait(28)
         def make_param_matrix(label, subtitle, color, center, icon_builders):
             frame = RoundedRectangle(
                 width=3.25,
@@ -2992,8 +3144,8 @@ class SC_05_TheConcretePlaygrounds(VietnameseMovingCameraScene):
             lambda: RegularPolygon(n=6, color=GOLD, fill_color=GOLD, fill_opacity=0.38),
         ]
         rule_icons = [
-            lambda: Tex(r"\text{\small co-op}", color=GREEN_C),
-            lambda: Tex(r"\text{\small battle}", color=RED),
+            lambda: make_label("Hợp tác", GREEN_C, 0.34),
+            lambda: make_label("Đối kháng", RED, 0.34),
             lambda: Arrow(LEFT * 0.28, RIGHT * 0.28, color=GREEN_C, stroke_width=2.0, max_tip_length_to_length_ratio=0.22),
         ]
         matrix_t = make_param_matrix("T", "Địa hình", BLUE_C, LEFT * 4.0 + UP * 0.65, terrain_icons)
@@ -3001,11 +3153,11 @@ class SC_05_TheConcretePlaygrounds(VietnameseMovingCameraScene):
         matrix_r = make_param_matrix("R", "Luật chơi", GREEN_C, RIGHT * 4.0 + UP * 0.65, rule_icons)
         matrices = VGroup(matrix_t, matrix_o, matrix_r)
 
-        self.play(LaggedStart(*[FadeIn(m, shift=UP * 0.12) for m in matrices], lag_ratio=0.16), run_time=2.4)
-        self.wait(13.6)
+        self.play(LaggedStart(*[FadeIn(m, shift=UP * 0.12) for m in matrices], lag_ratio=0.16), run_time=2.5)
+        self.wait(17.65)
 
         combo_title = make_label("T x O x R  ->  Tổ hợp môi trường", GOLD, 0.56).next_to(matrices, DOWN, buff=0.28)
-        self.play(FadeIn(combo_title, shift=UP * 0.08), run_time=0.9)
+        self.play(FadeIn(combo_title, shift=UP * 0.08), run_time=1.0)
 
         connectors = VGroup()
         selected_cells = VGroup()
@@ -3042,12 +3194,12 @@ class SC_05_TheConcretePlaygrounds(VietnameseMovingCameraScene):
                 for start in starts
             ])
             game = make_game_window(window_positions[cycle % 3], indices[0], indices[1], indices[2])
-            self.play(FadeOut(selected_cells), FadeOut(connectors), run_time=0.25)
+            self.play(FadeOut(selected_cells), FadeOut(connectors), run_time=0.20)
             selected_cells = selected
             connectors = lines
-            self.play(FadeIn(selected_cells), Create(connectors), ReplacementTransform(mini_windows[cycle % 3], game), run_time=1.05)
+            self.play(FadeIn(selected_cells), Create(connectors), ReplacementTransform(mini_windows[cycle % 3], game), run_time=1.00)
             mini_windows[cycle % 3] = game
-        self.wait(14.0)
+        self.wait(1)
 
         count_tracker = ValueTracker(0)
         counter = DecimalNumber(
@@ -3063,8 +3215,8 @@ class SC_05_TheConcretePlaygrounds(VietnameseMovingCameraScene):
             scale=0.40,
             buff=0.08,
         ).next_to(counter, UP, buff=0.12)
-        self.play(FadeIn(counter, shift=UP * 0.08), FadeIn(count_label, shift=UP * 0.08), run_time=0.8)
-        self.play(count_tracker.animate.set_value(25_000_000_000), run_time=2.4, rate_func=exponential_decay)
+        self.play(FadeIn(counter, shift=UP * 0.08), FadeIn(count_label, shift=UP * 0.08), run_time=1.0)
+        self.play(count_tracker.animate.set_value(25_000_000_000), run_time=3.5, rate_func=exponential_decay)
         counter.clear_updaters()
         counter.set_value(25_000_000_000)
 
@@ -3087,7 +3239,7 @@ class SC_05_TheConcretePlaygrounds(VietnameseMovingCameraScene):
                     dot.velocity -= normalize(v) * 0.75
                 dot.velocity += rotate_vector(dot.velocity, PI / 2) * 0.03 * dt
                 dot.set_opacity(0.55 + 0.35 * np.random.random())
-
+        self.wait(11.7)
         self.play(
             FadeOut(selected_cells),
             FadeOut(connectors),
@@ -3096,7 +3248,7 @@ class SC_05_TheConcretePlaygrounds(VietnameseMovingCameraScene):
             FadeOut(mini_windows),
             FadeIn(petri_ring, scale=0.75),
             FadeIn(digital_agents),
-            run_time=2.2,
+            run_time=2.5,
         )
         digital_agents.add_updater(update_digital_agents)
         counter.phase = 0.0
@@ -3106,7 +3258,7 @@ class SC_05_TheConcretePlaygrounds(VietnameseMovingCameraScene):
             mob.set_opacity(0.74 + 0.26 * (0.5 + 0.5 * np.sin(mob.phase * 1.1)))
 
         counter.add_updater(pulse_counter)
-        self.wait(60.4)
+        self.wait(6.95)
         digital_agents.clear_updaters()
         counter.clear_updaters()
 
@@ -3133,10 +3285,11 @@ class SC_05_TheConcretePlaygrounds(VietnameseMovingCameraScene):
             Create(slider_line),
             FadeIn(slider_dot),
             FadeIn(slider_label),
-            run_time=2.0,
+            run_time=2.5,
         )
-        self.play(slider_dot.animate.shift(RIGHT * 2.1), run_time=1.4, rate_func=smooth)
-        self.wait(4.0)
+        self.wait(5.0)
+        self.play(slider_dot.animate.shift(RIGHT * 2.1), run_time=2.0, rate_func=smooth)
+        self.wait(11.22)
         self.play(
             FadeOut(xland_title),
             FadeOut(counter),
@@ -3159,7 +3312,6 @@ class SC_06_TheAutocurriculaBottleneck(VietnameseScene):
         title = create_title_banner(r"SC\_06: The Autocurricula Bottleneck \& Goldilocks Zone")
         title.scale(0.90).to_edge(UP, buff=0.35)
         self.play(FadeIn(title, shift=DOWN * 0.12), run_time=1.0)
-        self.wait(0.5)
 
         def make_label(text, color=WHITE, scale=0.58):
             return Tex(rf"\text{{{text}}}", color=color).scale(scale)
@@ -3173,6 +3325,129 @@ class SC_06_TheAutocurriculaBottleneck(VietnameseScene):
             ])
             block.arrange(DOWN, aligned_edge=aligned_edge, buff=buff)
             return block
+        # =========================================================================
+        # HOẠT CẢNH ĐỨA TRẺ & GIÁO SƯ (0.0s - 17.5s của wait)
+        # =========================================================================
+        # 1. Tạo 2 khung thẻ Glass Card cho 2 kịch bản
+        left_card = RoundedRectangle(width=4.5, height=3.0, corner_radius=0.15, color=RED, fill_color=BLACK, fill_opacity=0.6, stroke_width=1.2).shift(LEFT * 3.2 + DOWN * 0.3)
+        right_card = RoundedRectangle(width=4.5, height=3.0, corner_radius=0.15, color=BLUE_C, fill_color=BLACK, fill_opacity=0.6, stroke_width=1.2).shift(RIGHT * 3.2 + DOWN * 0.3)
+        
+        self.play(FadeIn(left_card, shift=RIGHT * 0.2), FadeIn(right_card, shift=LEFT * 0.2), run_time=1.5)
+        
+        # 2. DIỄN HỌA KỊCH BẢN A: Đứa trẻ trong phòng thi đại học (Quá khó)
+        baby_lbl = make_label("Đứa trẻ", BLUE_C, 0.44).move_to(left_card.get_center() + DOWN * 0.8)
+        baby_desc = make_label("Mới biết lật", GRAY_A, 0.35).next_to(baby_lbl, DOWN, buff=0.08)
+        baby_group = VGroup(
+            Circle(radius=0.22, color=BLUE_C, fill_color=BLUE_E, fill_opacity=0.6, stroke_width=1.5),
+            Dot(radius=0.08, color=BLUE_C)
+        ).move_to(left_card.get_center() + DOWN * 0.2)
+        
+        eq_1 = MathTex(r"\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}", color=GRAY_B).scale(0.44).move_to(left_card.get_center() + UP * 0.9)
+        eq_2 = MathTex(r"\nabla \cdot \mathbf{E} = \frac{\rho}{\varepsilon_0}", color=GRAY_B).scale(0.44).move_to(left_card.get_center() + LEFT * 1.1 + UP * 0.2)
+        eq_3 = MathTex(r"\hat{H}\Psi = E\Psi", color=GRAY_B).scale(0.44).move_to(left_card.get_center() + RIGHT * 1.1 + UP * 0.2)
+        
+        self.play(
+            FadeIn(baby_group, scale=0.8),
+            FadeIn(baby_lbl),
+            FadeIn(baby_desc),
+            run_time=1.0
+        )
+        self.play(
+            LaggedStart(Write(eq_1), Write(eq_2), Write(eq_3), lag_ratio=0.2),
+            run_time=2.0
+        )
+        too_hard_lbl = make_label("QUÁ KHÓ", RED, 0.45).move_to(left_card.get_center() + UP * 1.25)
+        red_cross = Cross(left_card, stroke_color=RED, stroke_width=4.0).scale(0.85)
+        self.play(
+            FadeIn(too_hard_lbl, shift=DOWN * 0.1),
+            Create(red_cross),
+            run_time=1.0
+        )
+        
+        # 3. DIỄN HỌA KỊCH BẢN B: Giáo sư toán làm phép tính lớp một (Quá dễ)
+        prof_lbl = make_label("Giáo sư", GOLD, 0.44).move_to(right_card.get_center() + DOWN * 0.8)
+        prof_desc = make_label("Chuyên ngành Toán", GRAY_A, 0.35).next_to(prof_lbl, DOWN, buff=0.08)
+        prof_group = VGroup(
+            Circle(radius=0.25, color=GOLD, fill_color=GOLD_E, fill_opacity=0.6, stroke_width=1.5),
+            Line(LEFT * 0.16 + UP * 0.28, RIGHT * 0.16 + UP * 0.28, color=GOLD, stroke_width=1.8),
+            Polygon(UP * 0.28, LEFT * 0.16 + UP * 0.36, UP * 0.44, RIGHT * 0.16 + UP * 0.36, color=GOLD, fill_color=GOLD, fill_opacity=1.0)
+        ).move_to(right_card.get_center() + DOWN * 0.2)
+        
+        seq_1 = MathTex(r"1 + 1 = 2", color=GRAY_B).scale(0.55).move_to(right_card.get_center() + UP * 0.9)
+        seq_2 = MathTex(r"2 - 1 = 1", color=GRAY_B).scale(0.55).move_to(right_card.get_center() + LEFT * 1.1 + UP * 0.2)
+        seq_3 = MathTex(r"3 \times 2 = 6", color=GRAY_B).scale(0.55).move_to(right_card.get_center() + RIGHT * 1.1 + UP * 0.2)
+        
+        self.play(
+            FadeIn(prof_group, scale=0.8),
+            FadeIn(prof_lbl),
+            FadeIn(prof_desc),
+            run_time=1.0
+        )
+        self.play(
+            LaggedStart(Write(seq_1), Write(seq_2), Write(seq_3), lag_ratio=0.2),
+            run_time=2.0
+        )
+        too_easy_lbl = make_label("QUÁ DỄ", BLUE_C, 0.45).move_to(right_card.get_center() + UP * 1.25)
+        blue_lock = RoundedRectangle(width=4.5, height=3.0, corner_radius=0.15, color=BLUE_C, stroke_width=4.0).scale(0.85).move_to(right_card)
+        self.play(
+            FadeIn(too_easy_lbl, shift=DOWN * 0.1),
+            Create(blue_lock),
+            run_time=1.0
+        )
+        
+        # 4. DIỄN HỌA KẾT QUẢ: Tiến trình giáo dục bị đóng băng hoàn toàn
+        progress_bg = RoundedRectangle(width=6.0, height=0.3, corner_radius=0.08, color=GRAY_B, stroke_width=1.0).shift(DOWN * 2.6)
+        progress_fill = RoundedRectangle(width=0.01, height=0.24, corner_radius=0.06, color=RED, fill_color=RED, fill_opacity=0.85, stroke_width=0).align_to(progress_bg, LEFT).shift(RIGHT * 0.03)
+        progress_lbl = make_label("Tiến trình giáo dục", WHITE, 0.40).next_to(progress_bg, UP, buff=0.12)
+        
+        self.play(
+            FadeIn(progress_bg),
+            FadeIn(progress_lbl),
+            run_time=1.0
+        )
+        self.play(
+            progress_fill.animate.stretch_to_fit_width(0.4).align_to(progress_bg, LEFT).shift(RIGHT * 0.03),
+            run_time=1.5,
+            rate_func=smooth
+        )
+        frozen_lbl = make_label("TIẾN TRÌNH BỊ ĐỐNG BĂNG HOÀN TOÀN", RED, 0.45).next_to(progress_bg, DOWN, buff=0.12)
+        progress_cross = Cross(progress_bg, stroke_color=RED, stroke_width=3.0)
+        self.play(
+            progress_fill.animate.set_color(BLUE_C),
+            progress_bg.animate.set_color(BLUE_E),
+            Create(progress_cross),
+            FadeIn(frozen_lbl, shift=UP * 0.08),
+            run_time=1.5
+        )
+        self.wait(1.0)
+        
+        # 5. Dỡ bỏ toàn bộ để trả lại không gian cho các phần sau
+        self.play(
+            FadeOut(left_card),
+            FadeOut(right_card),
+            FadeOut(baby_group),
+            FadeOut(baby_lbl),
+            FadeOut(baby_desc),
+            FadeOut(eq_1),
+            FadeOut(eq_2),
+            FadeOut(eq_3),
+            FadeOut(too_hard_lbl),
+            FadeOut(red_cross),
+            FadeOut(prof_group),
+            FadeOut(prof_lbl),
+            FadeOut(prof_desc),
+            FadeOut(seq_1),
+            FadeOut(seq_2),
+            FadeOut(seq_3),
+            FadeOut(too_easy_lbl),
+            FadeOut(blue_lock),
+            FadeOut(progress_bg),
+            FadeOut(progress_fill),
+            FadeOut(progress_lbl),
+            FadeOut(progress_cross),
+            FadeOut(frozen_lbl),
+            run_time=3.0
+        )
 
         # =========================================================================
         # PHASE 1: SELF-PLAY & NICHE ENTRAPMENT (0.0s - 45.0s)
@@ -3303,7 +3578,7 @@ class SC_06_TheAutocurriculaBottleneck(VietnameseScene):
         chase_trail.add_updater(update_trail)
         go_agent.add_updater(update_go_agent)
         
-        self.play(trial_tracker.animate.set_value(9_800_000), run_time=39.9, rate_func=linear)
+        self.play(trial_tracker.animate.set_value(9_800_000), run_time=54.9, rate_func=linear)
         trial_counter.clear_updaters()
         go_agent.clear_updaters()
 
@@ -3326,8 +3601,8 @@ class SC_06_TheAutocurriculaBottleneck(VietnameseScene):
             stroke_width=2.4,
             stroke_opacity=0.78,
         ).move_to(meter.goldilocks_zone.get_center())
-        ability_dot = Dot(meter.point_for_level(0.18) + RIGHT * 1.13, radius=0.085, color=BLUE_C)
-        ability_label = make_label("năng lực Agent", BLUE_C, 0.34).next_to(ability_dot, RIGHT, buff=0.12)
+        ability_dot = Dot(meter.point_for_level(0.18) + RIGHT * 1.35, radius=0.085, color=BLUE_C)
+        ability_label = make_label("năng lực Agent", BLUE_C, 0.34).next_to(ability_dot, RIGHT, buff=0.4)
         analysis_panel = RoundedRectangle(
             width=5.3,
             height=3.35,
@@ -3356,32 +3631,42 @@ class SC_06_TheAutocurriculaBottleneck(VietnameseScene):
             stroke_width=1.4,
             stroke_opacity=0.45,
         )
-
+        
         self.play(
             FadeIn(phase2_title, shift=DOWN * 0.08),
             Create(meter),
             FadeIn(analysis_panel, shift=RIGHT * 0.12),
-            LaggedStart(*[FadeIn(line, shift=UP * 0.08) for line in meter_explain], lag_ratio=0.15),
             Create(calibration_line),
             Create(gold_window),
             FadeIn(ability_dot),
             FadeIn(ability_label),
             run_time=2.4,
         )
-        self.wait(8.0)
+        self.wait(20.0)
+        # Giọng đọc giới thiệu vùng Quá dễ (Blue)
+        self.play(FadeIn(meter_explain[0], shift=UP * 0.08), run_time=1.0)
+        self.wait(11.0) 
+        
+        # Giọng đọc giới thiệu vùng Quá khó (Red)
+        self.play(FadeIn(meter_explain[1], shift=UP * 0.08), run_time=1.0)
+        self.wait(14.0)
+        
+        # Giọng đọc giới thiệu vùng Goldilocks (Gold)
+        self.play(FadeIn(meter_explain[2], shift=UP * 0.08), run_time=1.0)
+        self.wait(2.0) # Tổng cộng vẫn là 50 giây wait
         
         target_y = meter.point_for_level(0.50)[1]
         self.play(
             meter.pointer.animate.shift(UP * (target_y - meter.pointer.get_center()[1])),
-            ability_dot.animate.move_to(meter.point_for_level(0.50) + RIGHT * 1.13),
-            ability_label.animate.next_to(meter.point_for_level(0.50) + RIGHT * 1.13, RIGHT, buff=0.12),
+            ability_dot.animate.move_to(meter.point_for_level(0.50) + RIGHT * 1.35),
+            ability_label.animate.next_to(meter.point_for_level(0.50) + RIGHT * 1.35, RIGHT, buff=0.4),
             run_time=2.8,
             rate_func=smooth,
         )
-        self.wait(35.8)
+        self.wait(10.3)
 
         # =========================================================================
-        # PHASE 3: UNIFORM SAMPLING & BREAKDOWN (95.0s - 180.0s)
+        # PHASE 3: UNIFORM SAMPLING & BREAKDOWN (93.5s - 200.16s)
         # =========================================================================
         self.play(FadeOut(phase2_title), FadeOut(analysis_panel), FadeOut(meter_explain), FadeOut(calibration_line), FadeOut(gold_window), FadeOut(ability_label), run_time=1.0)
         
@@ -3433,7 +3718,7 @@ class SC_06_TheAutocurriculaBottleneck(VietnameseScene):
             FadeIn(uniform_lbl, shift=UP * 0.08),
             FadeIn(alert_box),
             Write(collapse_lbl),
-            run_time=3.2,
+            run_time=3.5,
         )
 
         sampler_arrow = Arrow(ORIGIN + RIGHT * 0.68, ORIGIN, color=RED, stroke_width=3.0, max_tip_length_to_length_ratio=0.32)
@@ -3449,7 +3734,7 @@ class SC_06_TheAutocurriculaBottleneck(VietnameseScene):
         for direction in [RIGHT, LEFT, RIGHT, LEFT, UP, DOWN]:
             self.play(meter.animate.shift(direction * 0.12), run_time=0.12, rate_func=there_and_back)
         
-        self.wait(72.56)
+        self.wait(31.15)
 
         crack_lines = VGroup()
         crack_anchor = meter.get_center()
@@ -3463,9 +3748,9 @@ class SC_06_TheAutocurriculaBottleneck(VietnameseScene):
             line.set_points_as_corners([crack_anchor + point for point in spec])
             crack_lines.add(line)
         lost_compass = make_label("La bàn định hướng bị mất", RED, 0.66).next_to(title, DOWN, buff=0.28)
-        self.play(Create(crack_lines), FadeIn(lost_compass, shift=DOWN * 0.10), run_time=1.2)
-        self.play(meter.animate.shift(DOWN * 0.18).set_opacity(0.45), sampler_group.animate.set_opacity(0.25), ability_dot.animate.set_opacity(0.25), run_time=1.0)
-        self.wait(2.0)
+        self.play(Create(crack_lines), FadeIn(lost_compass, shift=DOWN * 0.10), run_time=1.8)
+        self.play(meter.animate.shift(DOWN * 0.18).set_opacity(0.45), sampler_group.animate.set_opacity(0.25), ability_dot.animate.set_opacity(0.25), run_time=1.5)
+        self.wait(9.81)
         self.play(
             FadeOut(meter),
             FadeOut(crack_lines),
