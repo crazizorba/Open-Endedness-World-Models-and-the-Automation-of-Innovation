@@ -2268,7 +2268,7 @@ class SC_04_TheIllusionOfGoals(VietnameseScene):
     """
     def construct(self):
         load_safe_sound(self, "SC_04_SteppingStones.wav")
-        title = create_title_banner(r"SC\_04: The Illusion of Goals (Objective Design)")
+        title = create_title_banner(r"The Illusion of Goals (Objective Design)")
         title.scale(0.88).to_edge(UP, buff=0.35)
         self.play(FadeIn(title, shift=DOWN * 0.12), run_time=1.0)
         self.wait(19.0)
@@ -2846,7 +2846,7 @@ class SC_05_TheConcretePlaygrounds(VietnameseMovingCameraScene):
     """
     def construct(self):
         load_safe_sound(self, "SC_05_Concrete_Playgrounds.wav")
-        title = create_title_banner(r"SC\_05: The Concrete Playgrounds: NetHack to XLand")
+        title = create_title_banner(r"The Concrete Playgrounds: NetHack to XLand")
         title.scale(0.88).to_edge(UP, buff=0.35)
         self.play(FadeIn(title, shift=DOWN * 0.12), run_time=2.0)
 
@@ -3309,7 +3309,7 @@ class SC_06_TheAutocurriculaBottleneck(VietnameseScene):
     """
     def construct(self):
         load_safe_sound(self, "SC_06_GoldilocksNiche.wav")
-        title = create_title_banner(r"SC\_06: The Autocurricula Bottleneck \& Goldilocks Zone")
+        title = create_title_banner(r"The Autocurricula Bottleneck \& Goldilocks Zone")
         title.scale(0.90).to_edge(UP, buff=0.35)
         self.play(FadeIn(title, shift=DOWN * 0.12), run_time=1.0)
 
