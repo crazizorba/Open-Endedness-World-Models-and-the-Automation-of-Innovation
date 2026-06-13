@@ -1,8 +1,0 @@
-file 'assets/s1_final_output.mp4'
-file 'assets/s2_final_output.mp4'
-file 'assets/s3_final_output.mp4'
-file 'assets/s4_final_output.mp4'
-file 'assets/s4a_final_output.mp4'
-file 'assets/s5_final_output.mp4'
-file 'assets/s5a_final_output.mp4'
-file 'assets/s6_final_output.mp4'
