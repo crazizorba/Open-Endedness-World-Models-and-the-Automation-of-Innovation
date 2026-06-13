@@ -16,10 +16,10 @@ media/videos/**/cache/
 
 # Các tệp cấu hình cục bộ của Manim nếu bạn tùy chỉnh riêng cho máy mình
 .manim.cfg
-scenes/part_1_open_endedness/assets/*
-scenes/part_2_world_models/assets/*
-scenes/part_3_automation/assets/*
-scenes/part_2_genie2/assets/*
+scenes/part_1_open_endedness/assets/
+scenes/part_2_world_models/assets/
+scenes/part_3_automation/assets/
+scenes/part_2_genie2/assets/
 # ==========================================
 # 2. LATEX & TEXT RENDER ARTIFACTS (File tạm từ LaTeX)
 # ==========================================
